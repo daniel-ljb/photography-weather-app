@@ -3,7 +3,9 @@
 A new Flutter project.
 
 > flutter emulators
+
 > flutter emulators --launch Medium_Phone_API_36.0 (or whatever yours is called)
+
 > flutter run
 
 ## Getting Started

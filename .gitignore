@@ -52,6 +52,7 @@ app.*.map.json
 /test/
 /web/
 /windows/
+/photography_app/
 .metadata
 analysis_options.yaml
 pubspec.lock

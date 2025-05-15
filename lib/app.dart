@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'pages/map_page.dart';
-import 'pages/weather_report_page.dart';
 import 'pages/alerts_page.dart';
 import 'pages/add_alert.dart';
+import 'pages/weather_detail_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -18,9 +18,13 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => MapPage(title: "test"),
-        '/weather': (context) => WeatherReportPage(title: "weather"),
         '/alerts': (context) => AlertsPage(title: "alerts"),
-        '/alerts/modify': (context) => AddAlertPage(title: "add alert",)
+        '/alerts/modify': (context) => AddAlertPage(title: "add alert"),
+        '/weather/detail': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments;
+          final location = args is String ? args : 'Unknown';
+          return WeatherDetailPage(location: location);
+        },
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -111,10 +112,27 @@ class _MapPageState extends State<MapPage> {
         children: [
           // Main content (map placeholder)
           Positioned.fill(
-            child: Container(
-              color: Colors.blue[100], // Placeholder for map
-              child: const Center(child: Text('Map will be displayed here')),
-            ),
+            child: FlutterMap(
+                mapController: MapController(),
+                options: MapOptions(
+                  // cameraConstraint: const CameraConstraint.contain(bounds:LatLngBounds.new(LatLng)),
+                ),
+                children: [
+                  TileLayer( // Bring your own tiles
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
+                    userAgentPackageName: 'com.example.app', // Add your app identifier
+                   ),
+                   RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
+                  attributions: [
+                    TextSourceAttribution(
+                      'OpenStreetMap contributors',
+                      onTap: () => 1, // (external)
+                    )
+                    // Also add images...
+                  ],
+                ),
+                   ],
+            )
           ),
           // Floating search bar and layers button
           Positioned(

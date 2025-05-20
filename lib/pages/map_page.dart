@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+import 'package:latlong2/latlong.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -115,7 +117,10 @@ class _MapPageState extends State<MapPage> {
             child: FlutterMap(
                 mapController: MapController(),
                 options: MapOptions(
-                  // cameraConstraint: const CameraConstraint.contain(bounds:LatLngBounds.new(LatLng)),
+                  cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
+                  initialCenter: LatLng(53.5,-3),
+                  initialZoom: 6,
+                  maxZoom: 19
                 ),
                 children: [
                   TileLayer( // Bring your own tiles

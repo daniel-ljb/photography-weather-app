@@ -32,6 +32,28 @@ class _MapPageState extends State<MapPage> {
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
 
+  String _currentLocation = 'Cambridge';
+
+  void _onLocationSelected(Map<String, dynamic> location) {
+    // Move map to selected location
+    _mapController.move(
+      LatLng(location['lat'], location['lon']),
+      10.0, // zoom level
+    );
+    
+    // Navigate to the detailed weather view, passing just the location name
+    Navigator.pushNamed(
+      context,
+      '/weather/detail',
+      arguments: location['name'], // Pass only the location name string
+    );
+
+    // Do NOT update _currentLocation here to prevent the bottom sheet from changing
+    // setState(() {
+    //   _currentLocation = location['name'];
+    // });
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -166,6 +188,7 @@ class _MapPageState extends State<MapPage> {
                 Expanded(
                   child: WeatherSearchBar(
                     controller: _searchController,
+                    onLocationSelected: _onLocationSelected,
                   ),
                 ),
               ],
@@ -213,13 +236,7 @@ class _MapPageState extends State<MapPage> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                       child: ForecastBox(
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/weather/detail',
-                            arguments: 'Cambridge',
-                          );
-                        },
+                        location: _currentLocation,
                       ),
                     ),
                     // TODO: Add more boxes for other locations when expanded

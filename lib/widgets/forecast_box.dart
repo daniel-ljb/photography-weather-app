@@ -46,7 +46,7 @@ class _ForecastBoxState extends State<ForecastBox> {
 
     // Find the index of the item that is currently at the very left edge or slightly beyond.
     // This is an estimation based on scroll offset and item width.
-    const double itemWidthEstimate = 55.0 + 16.0; // Item width + separator width
+    const double itemWidthEstimate = 55.0 + 8.0; // Item width + separator width
     final double scrollOffset = _scrollController.offset;
 
     // Calculate the index of the first item whose *start* is visible or just past the edge

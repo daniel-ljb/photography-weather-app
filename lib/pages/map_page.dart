@@ -174,7 +174,7 @@ class _MapPageState extends State<MapPage> {
           // Alert button in bottom right
           Positioned(
             right: 24,
-            bottom: MediaQuery.of(context).size.height * 0.23,
+            bottom: MediaQuery.of(context).size.height * 0.33,
             child: FloatingActionButton(
               heroTag: 'alertButton',
               backgroundColor: Colors.blue,
@@ -188,11 +188,11 @@ class _MapPageState extends State<MapPage> {
           // Pull-up tab with snap
           DraggableScrollableSheet(
             controller: _sheetController,
-            initialChildSize: 0.2,
-            minChildSize: 0.2,
+            initialChildSize: 0.3,
+            minChildSize: 0.3,
             maxChildSize: 0.9,
             snap: true,
-            snapSizes: const [0.2, 0.9],
+            snapSizes: const [0.3, 0.9],
             builder: (context, scrollController) {
               return Container(
                 decoration: const BoxDecoration(

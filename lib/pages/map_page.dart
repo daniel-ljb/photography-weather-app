@@ -17,6 +17,8 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final TextEditingController _searchController = TextEditingController();
 
+  final MapController _mapController = MapController();
+
   // Track the state of each layer
   bool _temperatureLayer = false;
   bool _precipitationLayer = false;
@@ -112,7 +114,7 @@ class _MapPageState extends State<MapPage> {
           // Main content (map placeholder)
           Positioned.fill(
             child: FlutterMap(
-                mapController: MapController(),
+                mapController: _mapController,
                 options: MapOptions(
                   cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
                   initialCenter: LatLng(53.5,-3),

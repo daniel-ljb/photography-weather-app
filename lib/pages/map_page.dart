@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
@@ -18,7 +20,11 @@ class _MapPageState extends State<MapPage> {
   // Track the state of each layer
   bool _temperatureLayer = false;
   bool _precipitationLayer = false;
+  bool _cloudLayer = false;
   bool _windLayer = false;
+  bool _visibilityLayer = false;
+  bool _lightPollutionLayer = false;
+  bool _shadeLayer = false;
 
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
@@ -49,7 +55,7 @@ class _MapPageState extends State<MapPage> {
             ),
             LayerToggle(
               title: 'Temperature',
-              icon: Icons.cloud,
+              icon: Icons.thermostat,
               value: _temperatureLayer,
               onChanged: (value) => setState(() => _temperatureLayer = value),
             ),
@@ -60,10 +66,34 @@ class _MapPageState extends State<MapPage> {
               onChanged: (value) => setState(() => _precipitationLayer = value),
             ),
             LayerToggle(
+              title: 'Clouds',
+              icon: Icons.cloud,
+              value: _cloudLayer,
+              onChanged: (value) => setState(() => _cloudLayer = value),
+            ),
+            LayerToggle(
               title: 'Wind',
               icon: Icons.air,
               value: _windLayer,
               onChanged: (value) => setState(() => _windLayer = value),
+            ),
+            LayerToggle(
+              title: 'Visibility',
+              icon: Icons.visibility,
+              value: _visibilityLayer,
+              onChanged: (value) => setState(() => _visibilityLayer = value),
+            ),
+            LayerToggle(
+              title: 'Light Pollution',
+              icon: Icons.flourescent,
+              value: _lightPollutionLayer,
+              onChanged: (value) => setState(() => _lightPollutionLayer = value),
+            ),
+            LayerToggle(
+              title: 'Shade',
+              icon: Icons.wb_shade,
+              value: _shadeLayer,
+              onChanged: (value) => setState(() => _shadeLayer = value),
             ),
             const Divider(),
             ListTile(
@@ -81,9 +111,20 @@ class _MapPageState extends State<MapPage> {
         children: [
           // Main content (map placeholder)
           Positioned.fill(
-            child: Container(
-              color: Colors.blue[100], // Placeholder for map
-              child: const Center(child: Text('Map will be displayed here')),
+            child: FlutterMap(
+                mapController: MapController(),
+                options: MapOptions(
+                  cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
+                  initialCenter: LatLng(53.5,-3),
+                  initialZoom: 6,
+                  maxZoom: 19
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.photography.app',
+                   ),
+                   ],
             ),
           ),
           // Floating search bar and layers button

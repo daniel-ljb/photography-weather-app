@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+// import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:photography_app/widgets/checkbox_widget.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -19,6 +20,9 @@ class _MapPageState extends State<MapPage> {
   bool _temperatureLayer = false;
   bool _precipitationLayer = false;
   bool _windLayer = false;
+  bool _visibilityLayer = false;
+  bool _lightPollutionLayer = false;
+  bool _shadeLayer = false;
 
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
@@ -33,6 +37,7 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -47,54 +52,45 @@ class _MapPageState extends State<MapPage> {
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.cloud),
-              title: const Text('Temperature'),
-              trailing: Checkbox(
-                value: _temperatureLayer,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _temperatureLayer = value ?? false;
-                  });
-                },
-              ),
-              onTap: () {
+            LayerToggleWidget(value: _temperatureLayer, text: 'Temperature', icon: Icons.thermostat,
+              onToggle: () {
                 setState(() {
                   _temperatureLayer = !_temperatureLayer;
                 });
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.water_drop),
-              title: const Text('Precipitation'),
-              trailing: Checkbox(
-                value: _precipitationLayer,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _precipitationLayer = value ?? false;
-                  });
-                },
-              ),
-              onTap: () {
+            LayerToggleWidget(value: _precipitationLayer, text: 'Precipitation', icon: Icons.water_drop,
+              onToggle: () {
                 setState(() {
                   _precipitationLayer = !_precipitationLayer;
                 });
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.air),
-              title: const Text('Wind'),
-              trailing: Checkbox(
-                value: _windLayer,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _windLayer = value ?? false;
-                  });
-                },
-              ),
-              onTap: () {
+            LayerToggleWidget(value: _windLayer, text: 'Wind', icon: Icons.air,
+              onToggle: () {
                 setState(() {
                   _windLayer = !_windLayer;
+                });
+              },
+            ),
+            LayerToggleWidget(value: _visibilityLayer, text: 'Visibility', icon: Icons.visibility,
+              onToggle: () {
+                setState(() {
+                  _visibilityLayer = !_visibilityLayer;
+                });
+              },
+            ),
+            LayerToggleWidget(value: _lightPollutionLayer, text: 'Light Pollution', icon: Icons.flourescent,
+              onToggle: () {
+                setState(() {
+                  _lightPollutionLayer = !_lightPollutionLayer;
+                });
+              },
+            ),
+            LayerToggleWidget(value: _shadeLayer, text: 'Shade', icon: Icons.wb_shade,
+              onToggle: () {
+                setState(() {
+                  _shadeLayer = !_shadeLayer;
                 });
               },
             ),

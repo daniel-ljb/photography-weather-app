@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:photography_app/services/open-meteo-api.dart';
+import '../services/open_meteo_api.dart';
 
 Timer? timer;
 

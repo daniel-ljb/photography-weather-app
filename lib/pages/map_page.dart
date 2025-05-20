@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-// import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:photography_app/widgets/checkbox_widget.dart';
+import '../widgets/layer_toggle.dart';
+import '../widgets/search_bar.dart';
+import '../widgets/forecast_box.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -20,9 +19,6 @@ class _MapPageState extends State<MapPage> {
   bool _temperatureLayer = false;
   bool _precipitationLayer = false;
   bool _windLayer = false;
-  bool _visibilityLayer = false;
-  bool _lightPollutionLayer = false;
-  bool _shadeLayer = false;
 
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
@@ -37,7 +33,6 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -52,47 +47,23 @@ class _MapPageState extends State<MapPage> {
                 style: TextStyle(color: Colors.white, fontSize: 24),
               ),
             ),
-            LayerToggleWidget(value: _temperatureLayer, text: 'Temperature', icon: Icons.thermostat,
-              onToggle: () {
-                setState(() {
-                  _temperatureLayer = !_temperatureLayer;
-                });
-              },
+            LayerToggle(
+              title: 'Temperature',
+              icon: Icons.cloud,
+              value: _temperatureLayer,
+              onChanged: (value) => setState(() => _temperatureLayer = value),
             ),
-            LayerToggleWidget(value: _precipitationLayer, text: 'Precipitation', icon: Icons.water_drop,
-              onToggle: () {
-                setState(() {
-                  _precipitationLayer = !_precipitationLayer;
-                });
-              },
+            LayerToggle(
+              title: 'Precipitation',
+              icon: Icons.water_drop,
+              value: _precipitationLayer,
+              onChanged: (value) => setState(() => _precipitationLayer = value),
             ),
-            LayerToggleWidget(value: _windLayer, text: 'Wind', icon: Icons.air,
-              onToggle: () {
-                setState(() {
-                  _windLayer = !_windLayer;
-                });
-              },
-            ),
-            LayerToggleWidget(value: _visibilityLayer, text: 'Visibility', icon: Icons.visibility,
-              onToggle: () {
-                setState(() {
-                  _visibilityLayer = !_visibilityLayer;
-                });
-              },
-            ),
-            LayerToggleWidget(value: _lightPollutionLayer, text: 'Light Pollution', icon: Icons.flourescent,
-              onToggle: () {
-                setState(() {
-                  _lightPollutionLayer = !_lightPollutionLayer;
-                });
-              },
-            ),
-            LayerToggleWidget(value: _shadeLayer, text: 'Shade', icon: Icons.wb_shade,
-              onToggle: () {
-                setState(() {
-                  _shadeLayer = !_shadeLayer;
-                });
-              },
+            LayerToggle(
+              title: 'Wind',
+              icon: Icons.air,
+              value: _windLayer,
+              onChanged: (value) => setState(() => _windLayer = value),
             ),
             const Divider(),
             ListTile(
@@ -110,30 +81,10 @@ class _MapPageState extends State<MapPage> {
         children: [
           // Main content (map placeholder)
           Positioned.fill(
-            child: FlutterMap(
-                mapController: MapController(),
-                options: MapOptions(
-                  cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
-                  initialCenter: LatLng(53.5,-3),
-                  initialZoom: 6,
-                  maxZoom: 19
-                ),
-                children: [
-                  TileLayer( // Bring your own tiles
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
-                    userAgentPackageName: 'com.example.app', // Add your app identifier
-                   ),
-                   RichAttributionWidget( // Include a stylish prebuilt attribution widget that meets all requirments
-                  attributions: [
-                    TextSourceAttribution(
-                      'OpenStreetMap contributors',
-                      onTap: () => 1, // (external)
-                    )
-                    // Also add images...
-                  ],
-                ),
-                   ],
-            )
+            child: Container(
+              color: Colors.blue[100], // Placeholder for map
+              child: const Center(child: Text('Map will be displayed here')),
+            ),
           ),
           // Floating search bar and layers button
           Positioned(
@@ -143,65 +94,41 @@ class _MapPageState extends State<MapPage> {
             child: Row(
               children: [
                 Builder(
-                  builder:
-                      (context) => Material(
-                        color: Colors.transparent,
-                        child: InkWell(
+                  builder: (context) => Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () {
-                            Scaffold.of(context).openDrawer();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
                             ),
-                            child: const Icon(Icons.layers, color: Colors.blue),
-                          ),
+                          ],
                         ),
+                        child: const Icon(Icons.layers, color: Colors.blue),
                       ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Container(
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: const InputDecoration(
-                        hintText: 'Search location...',
-                        prefixIcon: Icon(Icons.search),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
+                  child: WeatherSearchBar(
+                    controller: _searchController,
                   ),
                 ),
               ],
             ),
           ),
-          // Alert button in bottom right, 23% of the screen height above the bottom
+          // Alert button in bottom right
           Positioned(
             right: 24,
             bottom: MediaQuery.of(context).size.height * 0.23,
@@ -240,10 +167,9 @@ class _MapPageState extends State<MapPage> {
                   controller: scrollController,
                   padding: EdgeInsets.zero,
                   children: [
-                    // Forecast box for selected location
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                      child: GestureDetector(
+                      child: ForecastBox(
                         onTap: () {
                           Navigator.pushNamed(
                             context,
@@ -251,7 +177,6 @@ class _MapPageState extends State<MapPage> {
                             arguments: 'Cambridge',
                           );
                         },
-                        child: _ForecastBox(),
                       ),
                     ),
                     // TODO: Add more boxes for other locations when expanded
@@ -259,117 +184,6 @@ class _MapPageState extends State<MapPage> {
                 ),
               );
             },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Forecast box widget
-class _ForecastBox extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: const [
-                  Icon(Icons.location_on, size: 20, color: Colors.blue),
-                  SizedBox(width: 4),
-                  Text(
-                    'Cambridge',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  Row(
-                    children: [
-                      Icon(Icons.wb_sunny, size: 16, color: Colors.orange),
-                      SizedBox(width: 2),
-                      Text('5:08am'),
-                    ],
-                  ),
-                  SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.nights_stay,
-                        size: 16,
-                        color: Colors.deepOrange,
-                      ),
-                      SizedBox(width: 2),
-                      Text('8:45pm'),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 90,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: 8,
-              separatorBuilder: (context, index) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                // Example data
-                final hours = [
-                  '4pm',
-                  '5pm',
-                  '6pm',
-                  '7pm',
-                  '8pm',
-                  '9pm',
-                  '10pm',
-                  '11pm',
-                ];
-                final temps = [15, 16, 17, 15, 12, 9, 7, 6];
-                final icons = [
-                  Icons.wb_sunny,
-                  Icons.wb_sunny,
-                  Icons.wb_sunny,
-                  Icons.cloud,
-                  Icons.nights_stay,
-                  Icons.nights_stay,
-                  Icons.nights_stay,
-                  Icons.nights_stay,
-                ];
-                return Column(
-                  children: [
-                    Text(hours[index], style: const TextStyle(fontSize: 14)),
-                    Icon(icons[index], size: 24, color: Colors.blueGrey),
-                    Text(
-                      '${temps[index]}°C',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
           ),
         ],
       ),

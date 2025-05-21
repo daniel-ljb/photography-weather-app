@@ -11,7 +11,7 @@ class WeatherService {
   Future<Map<String, dynamic>> getWeatherForecast(String location) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$location&days=3&aqi=no'),
+        Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$location&days=14&aqi=no'),
       );
 
       if (response.statusCode == 200) {

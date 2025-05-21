@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
         '/alerts/modify': (context) => AddAlertPage(title: "add alert"),
         '/weather/detail': (context) {
           final args = ModalRoute.of(context)?.settings.arguments;
-          final location = args is String ? args : 'Unknown';
-          return WeatherDetailPage(location: location);
+          final locationName = args is String ? args : 'Unknown Location';
+          return WeatherDetailPage();
         },
       },
     );

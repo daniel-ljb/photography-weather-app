@@ -117,6 +117,7 @@ class _MapPageState extends State<MapPage> {
                 mapController: _mapController,
                 options: MapOptions(
                   cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
+                  interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag),
                   initialCenter: LatLng(53.5,-3),
                   initialZoom: 6,
                   maxZoom: 19

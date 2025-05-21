@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
+import '../models/location_manager.dart'; // Import the LocationManager
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -32,37 +33,59 @@ class _MapPageState extends State<MapPage> {
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
 
-  String _currentLocation = 'Cambridge';
+  String _currentLocation = 'Cambridge'; // Keep this state for now, but initialize from saved locations
 
-  void _onLocationSelected(Map<String, dynamic> location) {
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial location from the first saved location if available
+    final savedLocations = LocationManager().savedLocations;
+    if (savedLocations.isNotEmpty) {
+      _currentLocation = savedLocations.first['name'];
+       // Optionally move map to the initial saved location
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+         _mapController.move(
+           LatLng(savedLocations.first['lat'], savedLocations.first['lon']),
+           6.0, // initial zoom level
+         );
+       });
+    }
+  }
+
+  void _onLocationSelected(Map<String, dynamic> location) async {
     // Move map to selected location
     _mapController.move(
       LatLng(location['lat'], location['lon']),
       10.0, // zoom level
     );
-    
+
     // Navigate to the detailed weather view, passing just the location name
-    Navigator.pushNamed(
+    await Navigator.pushNamed(
       context,
       '/weather/detail',
       arguments: location['name'], // Pass only the location name string
     );
 
-    // Do NOT update _currentLocation here to prevent the bottom sheet from changing
-    // setState(() {
-    //   _currentLocation = location['name'];
-    // });
+    // When returning from the detail page, refresh the UI to show saved locations
+    setState(() {
+      // The list of saved locations is managed by the singleton LocationManager
+      // No local state update is needed here, just trigger a rebuild.
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _sheetController.dispose();
+    _mapController.dispose(); // Dispose map controller
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get the list of saved locations
+    final savedLocations = LocationManager().savedLocations;
+
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -139,7 +162,7 @@ class _MapPageState extends State<MapPage> {
                 mapController: _mapController,
                 options: MapOptions(
                   cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
-                  initialCenter: LatLng(53.5,-3),
+                  initialCenter: LatLng(53.5,-3), // Initial center might be overridden if saved locations exist
                   initialZoom: 6,
                   maxZoom: 19
                 ),
@@ -218,7 +241,7 @@ class _MapPageState extends State<MapPage> {
             snapSizes: const [0.3, 0.9],
             builder: (context, scrollController) {
               return Container(
-                decoration: const BoxDecoration(
+                  decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                   boxShadow: [
@@ -233,13 +256,36 @@ class _MapPageState extends State<MapPage> {
                   controller: scrollController,
                   padding: EdgeInsets.zero,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                      child: ForecastBox(
-                        location: _currentLocation,
+                    // Display saved locations using ForecastBox
+                    // This replaces the single initial forecast box
+                     if (savedLocations.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                        child: Center(child: Text('Search for locations to save them here.', style: TextStyle(fontSize: 16, color: Colors.grey[600]))),
+                      ) // Message when no locations are saved
+                    else
+                       ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: savedLocations.length,
+                        itemBuilder: (context, index) {
+                          final location = savedLocations[index];
+                          return Padding(
+                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            child: ForecastBox(
+                              location: location['name'], // Pass the location name to ForecastBox
+                               onTap: () {
+                                 // Navigate to the detailed weather view for the tapped saved location
+                                 Navigator.pushNamed(
+                                   context,
+                                   '/weather/detail',
+                                   arguments: location['name'], // Pass the location name
+                                 );
+                               },
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    // TODO: Add more boxes for other locations when expanded
                   ],
                 ),
               );

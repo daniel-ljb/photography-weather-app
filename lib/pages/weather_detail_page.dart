@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/weather_service.dart'; // We'll need this later
 import 'package:intl/intl.dart'; // Import for date formatting
 import 'package:flutter/rendering.dart'; // Import for RenderBox
+import '../models/location_manager.dart'; // Import the new manager
 
 class WeatherDetailPage extends StatefulWidget {
   const WeatherDetailPage({super.key});
@@ -22,6 +23,8 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
 
   // Store the GlobalKey for each day item to get its render box
   final Map<int, GlobalKey> _dayKeys = {};
+  bool _isLocationSaved = false; // State to track if the location is saved
+  Map<String, dynamic>? _currentLocationData; // Store the full location data
 
   @override
   void initState() {
@@ -38,8 +41,11 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     if (locationArg != null && locationArg is String) {
       setState(() {
         _locationName = locationArg;
+         // Check if the location is already saved
+        _isLocationSaved = LocationManager().isLocationSaved(_locationName);
       });
-      _fetchWeatherData(locationArg); // Fetch weather data
+      // We need the full location data to save it, so let's search for it.
+      _searchAndFetchWeatherData(locationArg);
     } else {
        setState(() {
         _locationName = 'Unknown Location';
@@ -49,32 +55,45 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     }
   }
 
-  // Method to fetch weather data
-  Future<void> _fetchWeatherData(String location) async {
-    setState(() {
+  // New method to search for location and then fetch weather data
+  Future<void> _searchAndFetchWeatherData(String locationName) async {
+     setState(() {
       _isLoading = true;
-      _error = null; // Clear previous errors
-      _weatherData = null; // Clear previous data
-      _selectedDayIndex = 0; // Reset selected day
-      _dayKeys.clear(); // Clear keys for new data
+      _error = null;
+      _weatherData = null;
+      _selectedDayIndex = 0;
+      _dayKeys.clear();
+       _currentLocationData = null; // Clear previous location data
     });
     try {
-      final data = await _weatherService.getWeatherForecast(location);
-      setState(() {
-        _weatherData = data;
-        _isLoading = false;
-         // Generate GlobalKeys for each day after data is fetched
-        if (_weatherData!['forecast'] != null) {
-          final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
-           for (int i = 0; i < forecastDays.length; i++) {
-            _dayKeys[i] = GlobalKey();
+      // Search for the location to get full data (including lat/lon)
+      final searchResults = await _weatherService.searchLocations(locationName);
+      if (searchResults.isNotEmpty) {
+        _currentLocationData = searchResults.first; // Assuming the first result is the desired one
+        // Now fetch weather data using the name from search result (or use lat/lon if API supports it consistently)
+         final data = await _weatherService.getWeatherForecast(_currentLocationData!['name']);
+        setState(() {
+          _weatherData = data;
+          _isLoading = false;
+           if (_weatherData!['forecast'] != null) {
+            final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
+             for (int i = 0; i < forecastDays.length; i++) {
+              _dayKeys[i] = GlobalKey();
+            }
           }
-        }
-      });
-      // After data is fetched, ensure scroll controller is attached before using it
-       WidgetsBinding.instance.addPostFrameCallback((_) {
-         // Ensure keys are created before attempting to scroll
-       });
+        });
+        // After data is fetched, ensure scroll controller is attached before using it
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+           // Optionally scroll to the beginning of the forecast
+           // _hourlyScrollController.jumpTo(0);
+         });
+
+      } else {
+         setState(() {
+          _error = 'Location not found.';
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -163,6 +182,34 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     }
   }
 
+  void _toggleSavedLocation() {
+    if (_currentLocationData != null) {
+      if (_isLocationSaved) {
+        // TODO: Implement remove location if needed
+        print('Removing location not yet implemented.');
+      } else {
+        LocationManager().addLocation(_currentLocationData!);
+        setState(() {
+          _isLocationSaved = true;
+        });
+         ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location saved!'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } else {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot save location: No location data available.'),
+          backgroundColor: Colors.redAccent,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   String _getDayDisplay(String dateString, int index) {
     final date = DateTime.parse(dateString);
     if (index < 7) {
@@ -194,6 +241,17 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_locationName),
+         actions: [
+          // Green plus/check mark icon
+          IconButton(
+            icon: Icon(
+              _isLocationSaved ? Icons.check_circle : Icons.add_circle_outline,
+              color: Colors.green,
+              size: 30,
+            ),
+            onPressed: _toggleSavedLocation,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(

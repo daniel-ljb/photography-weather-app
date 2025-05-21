@@ -54,5 +54,4 @@ app.*.map.json
 /windows/
 /photography_app/
 .metadata
-analysis_options.yaml
 pubspec.lock

@@ -33,7 +33,7 @@ class _MapPageState extends State<MapPage> {
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
 
-  String _currentLocation = 'Cambridge'; // Keep this state for now, but initialize from saved locations
+  String _currentLocation = 'Cambridge'; // Keep this state for now, but initialize from saved locations 
 
   @override
   void initState() {
@@ -147,7 +147,7 @@ class _MapPageState extends State<MapPage> {
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),
               onTap: () {
-                // TODO: Navigate to settings
+                // TODO: Navigate to settings // do we need settings?
                 Navigator.pop(context);
               },
             ),
@@ -228,8 +228,8 @@ class _MapPageState extends State<MapPage> {
               onPressed: () {
                 Navigator.pushNamed(context, '/alerts');
               },
-              child: const Icon(Icons.notifications, color: Colors.white),
               tooltip: 'Set Weather Alert',
+              child: const Icon(Icons.notifications, color: Colors.white),
             ),
           ),
           // Pull-up tab with snap

@@ -1,43 +1,178 @@
 import 'package:flutter/material.dart';
+import '../services/weather_service.dart';
 
-class WeatherSearchBar extends StatelessWidget {
+class WeatherSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
-  final ValueChanged<String>? onChanged;
+  final Function(Map<String, dynamic>)? onLocationSelected;
 
   const WeatherSearchBar({
     super.key,
     required this.controller,
     this.hintText = 'Search location...',
-    this.onChanged,
+    this.onLocationSelected,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
+  State<WeatherSearchBar> createState() => _WeatherSearchBarState();
+}
+
+class _WeatherSearchBarState extends State<WeatherSearchBar> {
+  final WeatherService _weatherService = WeatherService();
+  List<Map<String, dynamic>> _searchResults = [];
+  bool _isSearching = false;
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onSearchChanged);
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    _performSearch(widget.controller.text);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      _removeOverlay();
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final results = await _weatherService.searchLocations(query);
+      setState(() {
+        _searchResults = results;
+        _isSearching = false;
+      });
+      _showOverlay();
+    } catch (e) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      _removeOverlay();
+    }
+  }
+
+  void _showOverlay() {
+    _removeOverlay();
+    if (_searchResults.isEmpty) return;
+
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: size.width,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: Offset(0, size.height - 1),
+          child: Material(
+            elevation: 4,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12), top: Radius.circular(12)),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.4,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(12), top: Radius.circular(12)),
+              ),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: _searchResults.length,
+                itemBuilder: (context, index) {
+                  final location = _searchResults[index];
+                  return ListTile(
+                    title: Text(location['name']),
+                    subtitle: Text('${location['region']}, ${location['country']}'),
+                    onTap: () {
+                      widget.onLocationSelected?.call(location);
+                      _removeOverlay();
+                    },
+                  );
+                },
+              ),
+            ),
           ),
-        ],
+        ),
       ),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          hintText: hintText,
-          prefixIcon: const Icon(Icons.search),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            TextField(
+              controller: widget.controller,
+              decoration: InputDecoration(
+                hintText: widget.hintText,
+                prefixIcon: const Icon(Icons.search),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+            ),
+            if (_isSearching)
+              Positioned(
+                right: 8,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

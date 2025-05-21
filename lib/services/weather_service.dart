@@ -11,7 +11,7 @@ class WeatherService {
   Future<Map<String, dynamic>> getWeatherForecast(String location) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$location&days=3&aqi=no'),
+        Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$location&days=14&aqi=no'),
       );
 
       if (response.statusCode == 200) {
@@ -106,6 +106,29 @@ class WeatherService {
         return '🌫️';
       default:
         return '🌡️';
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> searchLocations(String query) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/search.json?key=$apiKey&q=$query'),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((location) => {
+          'name': location['name'],
+          'region': location['region'],
+          'country': location['country'],
+          'lat': location['lat'],
+          'lon': location['lon'],
+        }).toList();
+      } else {
+        throw Exception('Failed to search locations');
+      }
+    } catch (e) {
+      throw Exception('Error searching locations: $e');
     }
   }
 } 

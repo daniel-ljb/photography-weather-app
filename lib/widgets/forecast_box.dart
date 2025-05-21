@@ -192,7 +192,8 @@ class _ForecastBoxState extends State<ForecastBox> {
   };
 
   String _formatDate(DateTime time) {
-    return '${time.day}/${months[time.month]}';
+    final suffix = time.day > 3 && time.day < 21 ? 'th' : time.day % 10 == 1 ? 'st' : time.day % 10 == 2 ? 'nd' : time.day % 10 == 3 ? 'rd' : 'th';
+    return '${time.day}${suffix} ${months[time.month]}';
   }
 
   @override
@@ -312,6 +313,8 @@ class _ForecastBoxState extends State<ForecastBox> {
                                           fontSize: 12,
                                           color: Colors.grey,
                                         ),
+                                        overflow: TextOverflow.visible,
+                                        softWrap: false,
                                       ),
                                     ),
                                     Text(

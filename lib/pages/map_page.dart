@@ -51,6 +51,37 @@ class _MapPageState extends State<MapPage> {
        });
     }
   }
+  
+  // Helper method to build markers from saved locations
+  List<Marker> _buildLocationMarkers() {
+    final savedLocations = LocationManager().savedLocations;
+    return savedLocations.map((location) {
+      return Marker(
+        point: LatLng(location['lat'], location['lon']),
+        width: 80.0, // Adjust marker size as needed
+        height: 80.0,
+        // The child widget for the marker (the "pin" visual)
+        child: GestureDetector(
+          onTap: () {
+            // Navigate to the detail page when the marker is tapped
+            Navigator.pushNamed(
+              context,
+              '/weather/detail',
+              arguments: location['name'],
+            );
+          },
+          child: Tooltip( // Add a tooltip for hovering/long press
+            message: location['name'],
+            child: const Icon(
+              Icons.location_on, // Standard location pin icon
+              color: Colors.blue, // Choose a color for your pins
+              size: 40.0, // Adjust icon size
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
 
   void _onLocationSelected(Map<String, dynamic> location) async {
     // Move map to selected location
@@ -172,6 +203,9 @@ class _MapPageState extends State<MapPage> {
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.photography.app',
                    ),
+                   MarkerLayer(
+                     markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
+                   )
                    ],
             ),
           ),

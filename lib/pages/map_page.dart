@@ -5,6 +5,7 @@ import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
 import '../models/location_manager.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -34,6 +35,8 @@ class _MapPageState extends State<MapPage> {
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
+
+  final String _openWeatherMapApiKey = dotenv.env['OPEN_WEATHER_MAP_API_KEY'] ?? '';
 
   @override
   void initState() {
@@ -213,6 +216,16 @@ class _MapPageState extends State<MapPage> {
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.photography.app',
                    ),
+                   if (_temperatureLayer) // Only show if _temperatureLayer is true
+                     Opacity( // Use Opacity widget to control transparency
+                       opacity: 0.95, // Make it semi-transparent so base map is visible
+                       child: TileLayer(
+                         // OpenWeatherMap Temperature Layer URL
+                         // Replace YOUR_OPENWEATHERMAP_API_KEY with your actual key
+                         urlTemplate: 'https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
+                         userAgentPackageName: 'com.photography.app.weather_layer',
+                       ),
+                     ),
                    MarkerLayer(
                      markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
                    )

@@ -32,6 +32,12 @@ class _MapPageState extends State<MapPage> {
   bool _lightPollutionLayer = false;
   bool _shadeLayer = false;
 
+  // Context menu
+  Offset? _tapPosition;
+  LatLng? _tapLatLng;
+  bool _showContextMenu = false;
+
+
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
@@ -209,7 +215,22 @@ class _MapPageState extends State<MapPage> {
                   interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.scrollWheelZoom),
                   initialCenter: LatLng(53.5,-3),
                   initialZoom: 6,
-                  maxZoom: 19
+                  maxZoom: 19,
+                  onLongPress:(tapPosition, point) {
+                    setState(() {
+                      _tapPosition = Offset(tapPosition.global.dx, tapPosition.global.dy);
+                      _tapLatLng = point;
+                      _showContextMenu = true;
+                    });
+                  },
+                  onPointerDown: (tapPosition, point) {
+                    // print("tap");
+                    if (_showContextMenu) {
+                      setState(() {
+                        _showContextMenu = false;
+                      });
+                    }
+                  },
                 ),
                 children: [
                   TileLayer(
@@ -228,10 +249,41 @@ class _MapPageState extends State<MapPage> {
                      ),
                    MarkerLayer(
                      markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
-                   )
+                   ),
                    ],
             ),
           ),
+          // Context Menu
+          if (_showContextMenu && _tapPosition != null) 
+            Positioned(
+              left: _tapPosition!.dx,
+              top: _tapPosition!.dy,
+              width: 140.0,
+              height: 50.0,
+              child: GestureDetector(
+                onTap: () {}, // prevent tap from propagating
+                child: Material(
+                  elevation: 4,
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        title: const Text('Add Pin',style: TextStyle(color: Colors.black, fontSize: 14),),
+                        onTap: () {
+                          // Do something with _tapLatLng
+                          print("Tapped at $_tapLatLng");
+                          setState(() {
+                            _showContextMenu = false;
+                          });
+                        },
+                      ),
+                      ],
+                  ),
+                ),
+              ),
+            ),
           // Floating search bar and layers button
           Positioned(
             top: MediaQuery.of(context).padding.top,

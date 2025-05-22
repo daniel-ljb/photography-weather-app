@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/weather_service.dart';
-import 'package:intl/intl.dart';
 
 class ForecastBox extends StatefulWidget {
   final String location;
@@ -45,7 +44,6 @@ class _ForecastBoxState extends State<ForecastBox> {
     if (forecast.isEmpty) return;
 
     // Find the index of the item that is currently at the very left edge or slightly beyond.
-    // This is an estimation based on scroll offset and item width.
     const double itemWidthEstimate = 55.0 + 8.0; // Item width + separator width
     final double scrollOffset = _scrollController.offset;
 
@@ -79,16 +77,14 @@ class _ForecastBoxState extends State<ForecastBox> {
       });
       
       // Set initial date after data is fetched
-      if (data != null) {
-        final forecast = _getHourlyForecast();
-        if (forecast.isNotEmpty) {
-          final time = forecast[0]['time'] as DateTime;
-          setState(() {
-             _currentDate = _formatDate(time);
-          });
-        }
+      final forecast = _getHourlyForecast();
+      if (forecast.isNotEmpty) {
+        final time = forecast[0]['time'] as DateTime;
+        setState(() {
+           _currentDate = _formatDate(time);
+        });
       }
-    } catch (e) {
+        } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -193,7 +189,7 @@ class _ForecastBoxState extends State<ForecastBox> {
 
   String _formatDate(DateTime time) {
     final suffix = time.day > 3 && time.day < 21 ? 'th' : time.day % 10 == 1 ? 'st' : time.day % 10 == 2 ? 'nd' : time.day % 10 == 3 ? 'rd' : 'th';
-    return '${time.day}${suffix} ${months[time.month]}';
+    return '${time.day}$suffix ${months[time.month]}';
   }
 
   @override

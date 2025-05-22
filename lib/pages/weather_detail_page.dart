@@ -185,20 +185,23 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
   void _toggleSavedLocation() {
     if (_currentLocationData != null) {
       if (_isLocationSaved) {
-        // TODO: Implement remove location if needed
+        LocationManager().removeLocation(_currentLocationData!);
+        setState(() {
+          _isLocationSaved = false;
+        });
         print('Removing location not yet implemented.');
       } else {
         LocationManager().addLocation(_currentLocationData!);
         setState(() {
           _isLocationSaved = true;
         });
-         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Location saved!'),
-            duration: Duration(seconds: 1),
-          ),
-        );
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location saved!'),
+          duration: Duration(seconds: 1),
+        ),
+      );
     } else {
        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

@@ -35,6 +35,13 @@ class LocationManager {
     }
   }
 
+  void removeLocation(Map<String, dynamic> location) {
+    // Remove the location based on its name and country
+    _savedLocations.removeWhere(
+      (loc) => loc['name'] == location['name'] && loc['country'] == location['country']
+    );
+  }
+
   // Method to check if a location is saved
   bool isLocationSaved(String locationName) {
     return _savedLocations.any((loc) => loc['name'] == locationName);

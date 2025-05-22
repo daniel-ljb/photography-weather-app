@@ -126,9 +126,28 @@ class _MapPageState extends State<MapPage> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
               ),
-              child: const Text(
-                'Weather Layers',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text(
+                    'Weather Layers',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Toggle map overlays',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
             ),
             LayerToggle(
@@ -172,15 +191,6 @@ class _MapPageState extends State<MapPage> {
               icon: Icons.wb_shade,
               value: _shadeLayer,
               onChanged: (value) => setState(() => _shadeLayer = value),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {
-                // TODO: Navigate to settings // do we need settings?
-                Navigator.pop(context);
-              },
             ),
           ],
         ),

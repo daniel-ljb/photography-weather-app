@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
-import '../models/location_manager.dart'; // Import the LocationManager
+import '../models/location_manager.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -35,16 +35,13 @@ class _MapPageState extends State<MapPage> {
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
 
-  String _currentLocation = 'Cambridge'; // Keep this state for now, but initialize from saved locations 
-
   @override
   void initState() {
     super.initState();
     // Set the initial location from the first saved location if available
     final savedLocations = LocationManager().savedLocations;
     if (savedLocations.isNotEmpty) {
-      _currentLocation = savedLocations.first['name'];
-       // Optionally move map to the initial saved location
+       // Move map to the initial saved location
        WidgetsBinding.instance.addPostFrameCallback((_) {
          _mapController.move(
            LatLng(savedLocations.first['lat'], savedLocations.first['lon']),
@@ -111,7 +108,7 @@ class _MapPageState extends State<MapPage> {
   void dispose() {
     _searchController.dispose();
     _sheetController.dispose();
-    _mapController.dispose(); // Dispose map controller
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -190,7 +187,7 @@ class _MapPageState extends State<MapPage> {
       ),
       body: Stack(
         children: [
-          // Main content (map placeholder)
+          // Main content
           Positioned.fill(
             child: FlutterMap(
                 mapController: _mapController,
@@ -269,7 +266,7 @@ class _MapPageState extends State<MapPage> {
               child: const Icon(Icons.notifications, color: Colors.white),
             ),
           ),
-          // Pull-up tab with snap
+          // Pull-up tab
           DraggableScrollableSheet(
             controller: _sheetController,
             initialChildSize: 0.3,
@@ -295,7 +292,6 @@ class _MapPageState extends State<MapPage> {
                   padding: EdgeInsets.zero,
                   children: [
                     // Display saved locations using ForecastBox
-                    // This replaces the single initial forecast box
                      if (savedLocations.isEmpty)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
@@ -311,13 +307,13 @@ class _MapPageState extends State<MapPage> {
                           return Padding(
                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                             child: ForecastBox(
-                              location: location['name'], // Pass the location name to ForecastBox
+                              location: location['name'],
                                onTap: () {
                                  // Navigate to the detailed weather view for the tapped saved location
                                  Navigator.pushNamed(
                                    context,
                                    '/weather/detail',
-                                   arguments: location['name'], // Pass the location name
+                                   arguments: location['name'],
                                  );
                                },
                             ),

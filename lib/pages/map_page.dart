@@ -8,7 +8,7 @@ import '../models/location_manager.dart'; // Import the LocationManager
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
-
+  
   final String title;
 
   @override
@@ -17,8 +17,10 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final TextEditingController _searchController = TextEditingController();
-
+  
   final MapController _mapController = MapController();
+
+  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10));
 
   // Track the state of each layer
   bool _temperatureLayer = false;
@@ -58,6 +60,7 @@ class _MapPageState extends State<MapPage> {
       LatLng(location['lat'], location['lon']),
       10.0, // zoom level
     );
+
 
     // Navigate to the detailed weather view, passing just the location name
     await Navigator.pushNamed(
@@ -161,7 +164,7 @@ class _MapPageState extends State<MapPage> {
             child: FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
+                  cameraConstraint: CameraConstraint.contain(bounds:mapBounds),
                   interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.scrollWheelZoom),
                   initialCenter: LatLng(53.5,-3),
                   initialZoom: 6,

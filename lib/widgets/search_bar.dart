@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/weather_service.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 class WeatherSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
   final Function(Map<String, dynamic>)? onLocationSelected;
+
 
   const WeatherSearchBar({
     super.key,
@@ -19,6 +22,10 @@ class WeatherSearchBar extends StatefulWidget {
 
 class _WeatherSearchBarState extends State<WeatherSearchBar> {
   final WeatherService _weatherService = WeatherService();
+  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10)); // TODO: depuplicate, this and map page
+
+
+
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
   final LayerLink _layerLink = LayerLink();
@@ -63,7 +70,7 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
     try {
       final results = await _weatherService.searchLocations(query);
       setState(() {
-        _searchResults = results;
+        _searchResults = results.where((location) => mapBounds.contains(LatLng(location["lat"], location["lon"]))).toList();
         _isSearching = false;
       });
       _showOverlay();

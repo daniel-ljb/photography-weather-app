@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
@@ -16,10 +18,10 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   
-  final MapController _mapController = MapController();
+  late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
 
   final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10));
 
@@ -52,9 +54,9 @@ class _MapPageState extends State<MapPage> {
     if (savedLocations.isNotEmpty) {
        // Move map to the initial saved location
        WidgetsBinding.instance.addPostFrameCallback((_) {
-         _mapController.move(
-           LatLng(savedLocations.first['lat'], savedLocations.first['lon']),
-           6.0, // initial zoom level
+         _mapController.animateTo(
+           dest: LatLng(savedLocations.first['lat'], savedLocations.first['lon']),
+           zoom: 6.0, // initial zoom level
          );
        });
     }
@@ -93,18 +95,12 @@ class _MapPageState extends State<MapPage> {
 
   void _onLocationSelected(Map<String, dynamic> location) async {
     // Move map to selected location
-    _mapController.move(
-      LatLng(location['lat'], location['lon']),
-      10.0, // zoom level
+    _mapController.animateTo(
+      dest: LatLng(location['lat'], location['lon']),
+      zoom: 10.0, // zoom level
     );
 
-
-    // Navigate to the detailed weather view, passing just the location name
-    await Navigator.pushNamed(
-      context,
-      '/weather/detail',
-      arguments: location['name'], // Pass only the location name string
-    );
+    // TODO: bring up context menu automatically
 
     // When returning from the detail page, refresh the UI to show saved locations
     setState(() {
@@ -209,7 +205,7 @@ class _MapPageState extends State<MapPage> {
           // Main content
           Positioned.fill(
             child: FlutterMap(
-                mapController: _mapController,
+                mapController: _mapController.mapController,
                 options: MapOptions(
                   cameraConstraint: CameraConstraint.contain(bounds:mapBounds),
                   interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.scrollWheelZoom),

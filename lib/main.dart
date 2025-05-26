@@ -10,7 +10,11 @@ Future<void> main() async {
     await dotenv.load(fileName: ".env");
     if (dotenv.env['WEATHER_API_KEY'] == null) {
       throw Exception('WEATHER_API_KEY not found in .env file');
-    }else if (dotenv.env['OPEN_WEATHER_MAP_API_KEY'] == null){
+    }
+    if (dotenv.env['LOCATIONIQ_API_KEY'] == null){
+      throw Exception('LOCATIONIQ_API_KEY API Key not found in env file!');
+    }
+    if (dotenv.env['OPEN_WEATHER_MAP_API_KEY'] == null){
       throw Exception('OPEN_WEATHER_MAP API Key not found in env file!');
     }
   } catch (e) {

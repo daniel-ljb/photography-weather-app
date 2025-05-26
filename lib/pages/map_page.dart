@@ -7,14 +7,14 @@ import 'package:weather_app/widgets/hold_context_menu.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
-import '../models/location_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../models/location_manager.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
   
   final String title;
-
+  
   @override
   State<MapPage> createState() => _MapPageState();
 }
@@ -230,20 +230,46 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                   },
                 ),
                 children: [
+                  // Map
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.photography.app',
                    ),
-                   if (_temperatureLayer) // Only show if _temperatureLayer is true
-                     Opacity( // Use Opacity widget to control transparency
-                       opacity: 0.95, // Make it semi-transparent so base map is visible
-                       child: TileLayer(
-                         // OpenWeatherMap Temperature Layer URL
-                         // Replace YOUR_OPENWEATHERMAP_API_KEY with your actual key
-                         urlTemplate: 'https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
-                         userAgentPackageName: 'com.photography.app.weather_layer',
-                       ),
-                     ),
+
+                   // Temperature Layer
+                   if (_temperatureLayer)
+                    TileLayer(
+                      urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
+                      userAgentPackageName: 'com.photography.app',
+                      additionalOptions: const {
+                        'noWrap': 'true',
+                        'opacity': '0.75',
+                        'palette': 'temperature:kelvin',  // Use OpenWeather's built-in palette
+                        'contour': '10',  // Contour lines every 10°C
+                      },
+                    ),
+
+                  // Precipitation Layer
+                  if (_precipitationLayer)
+                    TileLayer(
+                      urlTemplate: 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.6',
+                      userAgentPackageName: 'com.photography.app',
+                    ),
+
+                  // Cloud Coverage Layer
+                  if (_cloudLayer)
+                    TileLayer(
+                      urlTemplate: 'https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.5',
+                      userAgentPackageName: 'com.photography.app',
+                    ),
+
+                  // Wind Speed Layer
+                  if (_windLayer)
+                    TileLayer(
+                      urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.7',
+                      userAgentPackageName: 'com.photography.app',
+                    ),
+                  
                    MarkerLayer(
                      markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
                    ),
@@ -380,5 +406,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         ],
       ),
     );
-  }
+  }  
 }
+

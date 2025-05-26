@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/weather_service.dart'; // We'll need this later
 import 'package:intl/intl.dart'; // Import for date formatting
-import 'package:flutter/rendering.dart'; // Import for RenderBox
 import '../models/location_manager.dart'; // Import the new manager
 
 class WeatherDetailPage extends StatefulWidget {

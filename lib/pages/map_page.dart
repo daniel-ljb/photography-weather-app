@@ -4,7 +4,10 @@ import 'package:latlong2/latlong.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import '../models/location_manager.dart'; // Import the LocationManager
+final openWeatherApiKey = "31a8b1886eac6020ed00bd7623ada44b";//dotenv.env["LAYER_API_KEY"] ?? ''; // Get from https://openweathermap.org/api
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
@@ -14,6 +17,7 @@ class MapPage extends StatefulWidget {
   @override
   State<MapPage> createState() => _MapPageState();
 }
+
 
 class _MapPageState extends State<MapPage> {
   final TextEditingController _searchController = TextEditingController();
@@ -188,27 +192,70 @@ class _MapPageState extends State<MapPage> {
       body: Stack(
         children: [
           // Main content (map placeholder)
-          Positioned.fill(
-            child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  cameraConstraint: CameraConstraint.contain(bounds:LatLngBounds(LatLng(62, -15),  LatLng(40, 10))),
-                  interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.scrollWheelZoom),
-                  initialCenter: LatLng(53.5,-3),
-                  initialZoom: 6,
-                  maxZoom: 19
+Positioned.fill(
+  child: FlutterMap(
+    mapController: _mapController,
+    options: MapOptions(
+      cameraConstraint: CameraConstraint.contain(
+        bounds: LatLngBounds(LatLng(62, -15), LatLng(40, 10)),
+      ),
+      interactionOptions: const InteractionOptions(
+        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.scrollWheelZoom,
+      ),
+      initialCenter: LatLng(53.5, -3),
+      initialZoom: 6,
+      maxZoom: 19,
+    ),
+    // In your FlutterMap widget's children list
+    children: [
+            // Base Map Layer
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.photography.app',
                 ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.photography.app',
-                   ),
-                   MarkerLayer(
-                     markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
-                   )
-                   ],
-            ),
-          ),
+  
+if (_temperatureLayer)
+  TileLayer(
+    urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$openWeatherApiKey',
+    userAgentPackageName: 'com.photography.app',
+    additionalOptions: const {
+      'noWrap': 'true',
+      'opacity': '0.75',
+      'palette': 'temperature:kelvin',  // Use OpenWeather's built-in palette
+      'contour': '10',  // Contour lines every 10°C
+      
+    },
+
+  ),
+
+// Precipitation Layer
+if (_precipitationLayer)
+  TileLayer(
+    urlTemplate: 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=$openWeatherApiKey&opacity=0.6',
+    userAgentPackageName: 'com.photography.app',
+  ),
+
+// Cloud Coverage Layer
+if (_cloudLayer)
+  TileLayer(
+    urlTemplate: 'https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=$openWeatherApiKey&opacity=0.5',
+    userAgentPackageName: 'com.photography.app',
+  ),
+
+// Wind Speed Layer
+if (_windLayer)
+  TileLayer(
+    urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$openWeatherApiKey&opacity=0.7',
+    userAgentPackageName: 'com.photography.app',
+  ),
+  
+  // Markers Layer
+  MarkerLayer(
+    markers: _buildLocationMarkers(),
+  ),
+],
+  ),
+),
           // Floating search bar and layers button
           Positioned(
             top: MediaQuery.of(context).padding.top,
@@ -329,5 +376,6 @@ class _MapPageState extends State<MapPage> {
         ],
       ),
     );
-  }
+  }  
 }
+

@@ -55,3 +55,4 @@ app.*.map.json
 /photography_app/
 .metadata
 pubspec.lock
+.env

@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:weather_app/widgets/hold_context_menu.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
@@ -77,7 +78,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             Navigator.pushNamed(
               context,
               '/weather/detail',
-              arguments: location['name'],
+              arguments: "${location['lat']},${location['lon']},${location['name']}",
             );
           },
           child: Tooltip( // Add a tooltip for hovering/long press
@@ -251,34 +252,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           ),
           // Context Menu
           if (_showContextMenu && _tapPosition != null) 
-            Positioned(
-              left: _tapPosition!.dx,
-              top: _tapPosition!.dy,
-              width: 140.0,
-              height: 50.0,
-              child: GestureDetector(
-                onTap: () {}, // prevent tap from propagating
-                child: Material(
-                  elevation: 4,
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        title: const Text('Add Pin',style: TextStyle(color: Colors.black, fontSize: 14),),
-                        onTap: () {
-                          // Do something with _tapLatLng
-                          print("Tapped at $_tapLatLng");
-                          setState(() {
-                            _showContextMenu = false;
-                          });
-                        },
-                      ),
-                      ],
-                  ),
-                ),
-              ),
+            HoldContextMenu(
+              tapLatLng: _tapLatLng,
+              tapPosition: _tapPosition,
+              onClose: () {
+                setState(() {
+                  _showContextMenu = false;
+                });
+              },
             ),
           // Floating search bar and layers button
           Positioned(
@@ -384,7 +365,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                  Navigator.pushNamed(
                                    context,
                                    '/weather/detail',
-                                   arguments: location['name'],
+                                   arguments: "${location['lat']},${location['lon']},${location['name']}",
                                  );
                                },
                             ),

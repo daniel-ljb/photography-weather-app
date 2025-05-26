@@ -1,6 +1,13 @@
+import 'package:flutter_map_math/flutter_geo_math.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:weather_app/services/reverse_geocoding.dart';
+
 class LocationManager {
   // Singleton instance
   static final LocationManager _instance = LocationManager._internal();
+  
+  // API to get the location
+  final ReverseGeocoding _reverseGeocoding = ReverseGeocoding();
 
   // Factory constructor to return the same instance
   factory LocationManager() {
@@ -27,10 +34,30 @@ class LocationManager {
   // Getter for saved locations
   List<Map<String, dynamic>> get savedLocations => _savedLocations;
 
+  Future addLocationLatLng(LatLng coords) async {
+    if (!isLocationSaved({'lat': coords.latitude, 'lon':coords.longitude})) {
+      try {
+        Map<String,dynamic> placename = await _reverseGeocoding.getLocation(coords);
+        _savedLocations.add({
+          'name': placename['city'],
+          'region': placename['county'],
+          'country': placename['country'],
+          'lat': coords.latitude,
+          'lon': coords.longitude,
+        });
+        print(placename);
+      } on NoLocationException {
+        print("This Location does not have a name");
+      } catch (e) {
+        print("An error has occured $e");
+      }
+    }
+  }
+
   // Method to add a location
   void addLocation(Map<String, dynamic> location) {
-    // Prevent adding duplicates based on name and country
-    if (!_savedLocations.any((loc) => loc['name'] == location['name'] && loc['country'] == location['country'])) {
+    // Prevent adding duplicates based on latitude and longitude within 10 meters
+    if (!isLocationSaved(location)) {
       _savedLocations.add(location);
     }
   }
@@ -38,14 +65,21 @@ class LocationManager {
   void removeLocation(Map<String, dynamic> location) {
     // Remove the location based on its name and country
     _savedLocations.removeWhere(
-      (loc) => loc['name'] == location['name'] && loc['country'] == location['country']
+      (loc) => withinTenMetres(loc,location)
     );
   }
 
-  // Method to check if a location is saved
-  bool isLocationSaved(String locationName) {
-    return _savedLocations.any((loc) => loc['name'] == locationName);
+  bool isLocationSaved(Map<String, dynamic> location) {
+    return _savedLocations.any(
+      (loc) => withinTenMetres(loc,location)
+    );
   }
 
-  // TODO: Add remove location method if needed later
+  bool withinTenMetres(Map<String, dynamic> loc1, Map<String, dynamic> loc2) {
+    return FlutterMapMath().distanceBetween(
+      loc1['lat'],loc1['lon'],
+      loc2['lat'],loc2['lon'],
+      "meters"
+    ) <= 10;
+  }
 } 

@@ -40,12 +40,19 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     final locationArg = ModalRoute.of(context)?.settings.arguments;
     if (locationArg != null && locationArg is String) {
       setState(() {
-        _locationName = locationArg;
+        _locationName = locationArg.split(',')[2];
          // Check if the location is already saved
-        _isLocationSaved = LocationManager().isLocationSaved(_locationName);
+        _isLocationSaved = LocationManager().isLocationSaved({
+          'lat':double.parse(locationArg.split(',')[0]),
+          'lon':double.parse(locationArg.split(',')[1])
+        });
       });
+
+      // TODO: change to use coords instead of place name
       // We need the full location data to save it, so let's search for it.
-      _searchAndFetchWeatherData(locationArg);
+
+      String coordinates = "${locationArg.split(',')[0]},${locationArg.split(',')[1]}";
+      _searchAndFetchWeatherData(coordinates);
     } else {
        setState(() {
         _locationName = 'Unknown Location';
@@ -56,7 +63,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
   }
 
   // New method to search for location and then fetch weather data
-  Future<void> _searchAndFetchWeatherData(String locationName) async {
+  Future<void> _searchAndFetchWeatherData(String locationCoordiantes) async {
      setState(() {
       _isLoading = true;
       _error = null;
@@ -67,7 +74,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     });
     try {
       // Search for the location to get full data (including lat/lon)
-      final searchResults = await _weatherService.searchLocations(locationName);
+      final searchResults = await _weatherService.searchLocations(locationCoordiantes);
       if (searchResults.isNotEmpty) {
         _currentLocationData = searchResults.first; // Assuming the first result is the desired one
         // Now fetch weather data using the name from search result (or use lat/lon if API supports it consistently)

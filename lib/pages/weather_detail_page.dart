@@ -329,7 +329,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
                         const SizedBox(height: 16.0),
                         // Hourly forecast for all days (horizontal scroll)
                         SizedBox(
-                         height: 150,
+                         height: 160,
                          child: ListView.builder(
                            controller: _hourlyScrollController, // Assign the controller
                            scrollDirection: Axis.horizontal,

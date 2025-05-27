@@ -279,7 +279,7 @@ class _ForecastBoxState extends State<ForecastBox> {
                       ),
                       if (_weatherData != null)
                         SizedBox(
-                          height: 102,
+                          height: 112,
                           child: ListView.separated(
                             controller: _scrollController,
                             scrollDirection: Axis.horizontal,

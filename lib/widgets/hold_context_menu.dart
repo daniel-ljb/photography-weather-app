@@ -37,8 +37,8 @@ class _HoldContextMenu extends State<HoldContextMenu> {
     return Positioned(
       left: widget.tapPosition!.dx,
       top: widget.tapPosition!.dy,
-      width: 140.0,
-      height: 100.0,
+      width: 150.0,
+      height: 120.0,
       child: GestureDetector(
         onTap: () {}, // prevent tap from propagating
         child: Material(

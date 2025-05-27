@@ -176,18 +176,20 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
                 ),
               ),
             ),
-            if (_isSearching)
+            if (widget.controller.text.isNotEmpty)
               Positioned(
                 right: 8,
                 top: 0,
                 bottom: 0,
                 child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                  child: IconButton(
+                    icon: const Icon(Icons.clear, size: 20),
+                    onPressed: () {
+                      widget.controller.clear();
+                      _removeOverlay();
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
                 ),
               ),

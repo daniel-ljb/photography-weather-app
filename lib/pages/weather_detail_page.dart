@@ -77,7 +77,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
       if (searchResults.isNotEmpty) {
         _currentLocationData = searchResults.first; // Assuming the first result is the desired one
         // Now fetch weather data using the name from search result (or use lat/lon if API supports it consistently)
-         final data = await _weatherService.getWeatherForecast(_currentLocationData!['name']);
+         final data = await _weatherService.getWeatherForecast(locationCoordiantes);
         setState(() {
           _weatherData = data;
           _isLoading = false;

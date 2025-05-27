@@ -431,6 +431,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                             child: ForecastBox(
                               location: location['name'],
+                              coordinates: "${location['lat']},${location['lon']}",
                                onTap: () {
                                  // Navigate to the detailed weather view for the tapped saved location
                                  Navigator.pushNamed(

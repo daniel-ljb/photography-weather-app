@@ -17,6 +17,7 @@ class HomePage extends StatelessWidget {
           children: [
             const ForecastBox(
               location: 'Cambridge',
+              coordinates: "52.1951,0.1313",
             ),
           ],
         ),

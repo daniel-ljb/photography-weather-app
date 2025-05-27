@@ -3,11 +3,13 @@ import '../services/weather_service.dart';
 
 class ForecastBox extends StatefulWidget {
   final String location;
+  final String coordinates;
   final VoidCallback? onTap;
 
   const ForecastBox({
     super.key,
     this.location = 'Cambridge',
+    this.coordinates = '52.1951,0.1313',
     this.onTap,
   });
 
@@ -70,7 +72,7 @@ class _ForecastBoxState extends State<ForecastBox> {
         _error = null;
       });
 
-      final data = await _weatherService.getWeatherForecast(widget.location);
+      final data = await _weatherService.getWeatherForecast(widget.coordinates);
       setState(() {
         _weatherData = data;
         _isLoading = false;
@@ -222,7 +224,7 @@ class _ForecastBoxState extends State<ForecastBox> {
                       children: [
                         const Icon(Icons.error_outline, color: Colors.red),
                         const SizedBox(height: 8),
-                        Text(_error!, style: const TextStyle(color: Colors.red)),
+                        Text("Couldn't Load Weather Data", style: const TextStyle(color: Colors.red)),
                         TextButton(
                           onPressed: _fetchWeatherData,
                           child: const Text('Retry'),

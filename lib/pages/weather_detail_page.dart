@@ -195,19 +195,24 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
         setState(() {
           _isLocationSaved = false;
         });
-        print('Removing location not yet implemented.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location removed!'),
+            duration: Duration(seconds: 1),
+          ),
+        );
       } else {
         LocationManager().addLocation(_currentLocationData!);
         setState(() {
           _isLocationSaved = true;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location saved!'),
+            duration: Duration(seconds: 1),
+          ),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Location saved!'),
-          duration: Duration(seconds: 1),
-        ),
-      );
     } else {
        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

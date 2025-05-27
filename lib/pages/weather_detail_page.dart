@@ -346,7 +346,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
                            itemBuilder: (context, index) {
                              final hourData = allHourlyForecast[index];
                              final time = _formatTime(hourData['time']);
-                             final icon = _weatherService.getWeatherIcon(hourData['condition']['text']);
+                             final icon = hourData['condition']['icon'];
                              final temp = hourData['temp_c'].round();
                              final chanceOfRain = hourData['chance_of_rain'];
                              final rainAmount = hourData['precip_mm'];
@@ -363,7 +363,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                  children: [
                                    Text(time, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                   Text(icon, style: const TextStyle(fontSize: 30)),
+                                   Image.network("https:$icon", width: 24, height: 24),
                                    Text('$temp°C'),
                                    Text('$chanceOfRain%'),
                                    Text('$rainAmount mm'),

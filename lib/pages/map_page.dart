@@ -375,7 +375,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                     _setTime = _currentUNIX + 3600 * selectedTimeIndex;
                   });
                 },
-                labels: List.generate(15+1, (i) => i == 0 ? 'Now' : '+${i}h'),
+                labels: List.generate(12+1, (i) => i == 0 ? 'Now' : '+${i}h'),
               ),
             ],
             )

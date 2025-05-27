@@ -129,7 +129,7 @@ class _ForecastBoxState extends State<ForecastBox> {
           return {
             'time': time,
             'temp_c': hour['temp_c'],
-            'condition': hour['condition']['text'],
+            'condition': hour['condition']['icon'],
             'isMidnight': time.hour == 0,
           };
         }));
@@ -140,7 +140,7 @@ class _ForecastBoxState extends State<ForecastBox> {
           return {
             'time': time,
             'temp_c': hour['temp_c'],
-            'condition': hour['condition']['text'],
+            'condition': hour['condition']['icon'],
             'isMidnight': time.hour == 0,
           };
         }));
@@ -291,8 +291,7 @@ class _ForecastBoxState extends State<ForecastBox> {
                               final hourData = _getHourlyForecast()[index];
                               final time = hourData['time'] as DateTime;
                               final temp = hourData['temp_c'].round();
-                              final condition = hourData['condition'];
-                              final icon = _weatherService.getWeatherIcon(condition);
+                              final icon = hourData['condition'];
                               final isMidnight = hourData['isMidnight'];
 
                               return SizedBox(
@@ -320,7 +319,7 @@ class _ForecastBoxState extends State<ForecastBox> {
                                       style: const TextStyle(fontSize: 14),
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(icon, style: const TextStyle(fontSize: 24)),
+                                    Image.network("https:$icon", width: 24, height: 24),
                                     const SizedBox(height: 4),
                                     Text(
                                       '$temp°C',

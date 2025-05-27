@@ -33,8 +33,7 @@ class WeatherSearchBar extends StatefulWidget {
 class _WeatherSearchBarState extends State<WeatherSearchBar> {
   final WeatherService _weatherService = WeatherService();
   final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10)); // TODO: depuplicate, this and map page
-
-
+  final FocusNode _focusNode = FocusNode();
 
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
@@ -46,14 +45,23 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
     super.initState();
     widget.controller.addListener(_onSearchChanged);
     widget.weathersearchbarcontroller._removeOverlayInternal = _removeOverlay;
+    _focusNode.addListener(_onFocusChange);
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onSearchChanged);
     widget.weathersearchbarcontroller._removeOverlayInternal = null;
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     _removeOverlay();
     super.dispose();
+  }
+
+  void _onFocusChange() {
+    if (!_focusNode.hasFocus) {
+      _removeOverlay();
+    }
   }
 
   void _onSearchChanged() {
@@ -166,6 +174,7 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
           children: [
             TextField(
               controller: widget.controller,
+              focusNode: _focusNode,
               decoration: InputDecoration(
                 hintText: widget.hintText,
                 prefixIcon: const Icon(Icons.search),

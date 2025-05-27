@@ -4,6 +4,7 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:weather_app/widgets/hold_context_menu.dart';
+import 'package:weather_app/widgets/time_slider.dart';
 import '../widgets/layer_toggle.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
@@ -41,6 +42,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   bool _showContextMenu = false;
 
 
+  // For the time slider
+  int selectedTimeIndex = 0;
+  final int _currentUNIX = (DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day,DateTime.now().hour).toUtc().millisecondsSinceEpoch) ~/ 1000;
+  int? _setTime;
+
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
@@ -49,6 +55,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    _setTime = _currentUNIX;
     super.initState();
     // Set the initial location from the first saved location if available
     final savedLocations = LocationManager().savedLocations;
@@ -306,7 +313,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             top: MediaQuery.of(context).padding.top,
             left: 16,
             right: 16,
-            child: Row(
+            child: Column(children: [
+              Row(
               children: [
                 Builder(
                   builder: (context) => Material(
@@ -343,6 +351,20 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 ),
               ],
             ),
+            const SizedBox(height:12),
+            TimeSlider(
+              currentIndex: selectedTimeIndex,
+              onChanged: (newIndex) {
+                setState(() {
+                  selectedTimeIndex = newIndex;
+                  _setTime = _currentUNIX + 3600 * selectedTimeIndex;
+                });
+              },
+              
+              labels: List.generate(15+1, (i) => i == 0 ? 'Now' : '+${i}h'),
+            ),
+            ],
+            )
           ),
           // Alert button in bottom right
           Positioned(

@@ -3,8 +3,17 @@ import '../services/weather_service.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 
+class WeatherSearchBarController {
+  void Function()? _removeOverlayInternal;
+
+  void removeOverlay() {
+    _removeOverlayInternal?.call();
+  }
+}
+
 class WeatherSearchBar extends StatefulWidget {
   final TextEditingController controller;
+  final WeatherSearchBarController weathersearchbarcontroller;
   final String hintText;
   final Function(Map<String, dynamic>)? onLocationSelected;
 
@@ -12,6 +21,7 @@ class WeatherSearchBar extends StatefulWidget {
   const WeatherSearchBar({
     super.key,
     required this.controller,
+    required this.weathersearchbarcontroller,
     this.hintText = 'Search location...',
     this.onLocationSelected,
   });
@@ -35,11 +45,13 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
   void initState() {
     super.initState();
     widget.controller.addListener(_onSearchChanged);
+    widget.weathersearchbarcontroller._removeOverlayInternal = _removeOverlay;
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onSearchChanged);
+    widget.weathersearchbarcontroller._removeOverlayInternal = null;
     _removeOverlay();
     super.dispose();
   }

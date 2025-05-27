@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
@@ -21,10 +23,12 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
+  // Search bar
   final TextEditingController _searchController = TextEditingController();
-  
-  late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
+  final WeatherSearchBarController _searchBarHideController = WeatherSearchBarController();
 
+  // Map
+  late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
   final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10));
 
   // Track the state of each layer
@@ -229,9 +233,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                   },
                   onPointerDown: (tapPosition, point) {
                     // print("tap");
+                    _searchBarHideController.removeOverlay();
                     if (_showContextMenu) {
                       setState(() {
                         _showContextMenu = false;
+                        // Stop showing search bar
                       });
                     }
                   },
@@ -246,34 +252,32 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                    // Temperature Layer
                    if (_temperatureLayer)
                     TileLayer(
-                      urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
+                      // urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
+                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&palette=0:45A7FF;10:E3F043;25:FA6E43&opacity=0.7&date=$_setTime',
                       userAgentPackageName: 'com.photography.app',
-                      additionalOptions: const {
-                        'noWrap': 'true',
-                        'opacity': '0.75',
-                        'palette': 'temperature:kelvin',  // Use OpenWeather's built-in palette
-                        'contour': '10',  // Contour lines every 10°C
-                      },
                     ),
 
                   // Precipitation Layer
                   if (_precipitationLayer)
                     TileLayer(
-                      urlTemplate: 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.6',
+                      // urlTemplate: 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.6',
+                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/PA0/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&opacity=0.7&date=$_setTime',
                       userAgentPackageName: 'com.photography.app',
                     ),
 
                   // Cloud Coverage Layer
                   if (_cloudLayer)
                     TileLayer(
-                      urlTemplate: 'https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.5',
+                      // urlTemplate: 'https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.5',
+                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/CL/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&opacity=0.7&date=$_setTime',
                       userAgentPackageName: 'com.photography.app',
                     ),
 
                   // Wind Speed Layer
                   if (_windLayer)
                     TileLayer(
-                      urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.7',
+                      // urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.7',
+                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/WND/{z}/{x}/{y}?arrow_step=16&appid=$_openWeatherMapApiKey&date=$_setTime',
                       userAgentPackageName: 'com.photography.app',
                     ),
                   if (_lightPollutionLayer)
@@ -346,6 +350,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 Expanded(
                   child: WeatherSearchBar(
                     controller: _searchController,
+                    weathersearchbarcontroller: _searchBarHideController,
                     onLocationSelected: _onLocationSelected,
                   ),
                 ),

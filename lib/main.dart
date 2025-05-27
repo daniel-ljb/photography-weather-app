@@ -17,6 +17,9 @@ Future<void> main() async {
     if (dotenv.env['OPEN_WEATHER_MAP_API_KEY'] == null){
       throw Exception('OPEN_WEATHER_MAP API Key not found in env file!');
     }
+    if (dotenv.env['SHADEMAP_API_KEY'] == null) {
+      throw Exception('SHADEMAP_API_KEY API Key not found in env file!');
+    }
   } catch (e) {
     print('Error loading .env file: $e');
     // Continue running the app even if .env fails to load

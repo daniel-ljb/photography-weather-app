@@ -62,7 +62,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
   }
 
   // New method to search for location and then fetch weather data
-  Future<void> _searchAndFetchWeatherData(String locationCoordiantes) async {
+  Future<void> _searchAndFetchWeatherData(String locationCoordinates) async {
      setState(() {
       _isLoading = true;
       _error = null;
@@ -72,34 +72,36 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
        _currentLocationData = null; // Clear previous location data
     });
     try {
-      // Search for the location to get full data (including lat/lon)
-      final searchResults = await _weatherService.searchLocations(locationCoordiantes);
-      if (searchResults.isNotEmpty) {
-        _currentLocationData = searchResults.first; // Assuming the first result is the desired one
-        // Now fetch weather data using the name from search result (or use lat/lon if API supports it consistently)
-         final data = await _weatherService.getWeatherForecast(locationCoordiantes);
-        setState(() {
-          _weatherData = data;
-          _isLoading = false;
-           if (_weatherData!['forecast'] != null) {
-            final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
-             for (int i = 0; i < forecastDays.length; i++) {
-              _dayKeys[i] = GlobalKey();
-            }
-          }
-        });
-        // After data is fetched, ensure scroll controller is attached before using it
-         WidgetsBinding.instance.addPostFrameCallback((_) {
-           // Optionally scroll to the beginning of the forecast
-           // _hourlyScrollController.jumpTo(0);
-         });
+      // Parse the coordinates
+      final coords = locationCoordinates.split(',');
+      final lat = double.parse(coords[0]);
+      final lon = double.parse(coords[1]);
+      
+      // Create location data with the original coordinates
+      _currentLocationData = {
+        'lat': lat,
+        'lon': lon,
+        'name': _locationName, // Use the name we already have
+      };
 
-      } else {
-         setState(() {
-          _error = 'Location not found.';
-          _isLoading = false;
-        });
-      }
+      // Fetch weather data using the coordinates directly
+      final data = await _weatherService.getWeatherForecast('$lat,$lon');
+      setState(() {
+        _weatherData = data;
+        _isLoading = false;
+         if (_weatherData!['forecast'] != null) {
+          final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
+           for (int i = 0; i < forecastDays.length; i++) {
+            _dayKeys[i] = GlobalKey();
+          }
+        }
+      });
+      // After data is fetched, ensure scroll controller is attached before using it
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+         // Optionally scroll to the beginning of the forecast
+         // _hourlyScrollController.jumpTo(0);
+       });
+
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -201,6 +203,8 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
             duration: Duration(seconds: 1),
           ),
         );
+        // Pop with a result to notify MapPage that a location was removed
+        Navigator.pop(context, true);
       } else {
         LocationManager().addLocation(_currentLocationData!);
         setState(() {

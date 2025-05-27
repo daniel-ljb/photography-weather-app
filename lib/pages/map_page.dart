@@ -94,7 +94,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               context,
               '/weather/detail',
               arguments: "${location['lat']},${location['lon']},${location['name']}",
-            );
+            ).then((result) {
+              // If a location was removed, refresh the state
+              if (result == true) {
+                setState(() {});
+              }
+            });
           },
           child: Tooltip( // Add a tooltip for hovering/long press
             message: location['name'],
@@ -438,7 +443,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                                    context,
                                    '/weather/detail',
                                    arguments: "${location['lat']},${location['lon']},${location['name']}",
-                                 );
+                                 ).then((result) {
+                                   // If a location was removed, refresh the state
+                                   if (result == true) {
+                                     setState(() {});
+                                   }
+                                 });
                                },
                             ),
                           );

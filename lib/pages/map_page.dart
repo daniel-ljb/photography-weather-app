@@ -40,6 +40,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   bool _lightPollutionLayer = false;
   bool _shadeLayer = false;
 
+  // Helper method to check if any layer is selected
+  bool get _isAnyLayerSelected => _temperatureLayer || _precipitationLayer || 
+      _cloudLayer || _windLayer || _visibilityLayer || _lightPollutionLayer || _shadeLayer;
+
   // Context menu
   Offset? _tapPosition;
   LatLng? _tapLatLng;
@@ -357,17 +361,17 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height:12),
-            TimeSlider(
-              currentIndex: selectedTimeIndex,
-              onChanged: (newIndex) {
-                setState(() {
-                  selectedTimeIndex = newIndex;
-                  _setTime = _currentUNIX + 3600 * selectedTimeIndex;
-                });
-              },
-              
-              labels: List.generate(15+1, (i) => i == 0 ? 'Now' : '+${i}h'),
-            ),
+            if (_isAnyLayerSelected)
+              TimeSlider(
+                currentIndex: selectedTimeIndex,
+                onChanged: (newIndex) {
+                  setState(() {
+                    selectedTimeIndex = newIndex;
+                    _setTime = _currentUNIX + 3600 * selectedTimeIndex;
+                  });
+                },
+                labels: List.generate(15+1, (i) => i == 0 ? 'Now' : '+${i}h'),
+              ),
             ],
             )
           ),

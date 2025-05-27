@@ -269,7 +269,21 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                       urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.7',
                       userAgentPackageName: 'com.photography.app',
                     ),
-                  
+                  if (_lightPollutionLayer)
+                    OverlayImageLayer(
+                      overlayImages: [
+                        OverlayImage( // Unrotated
+                          bounds: LatLngBounds(
+                            // LatLng(64.58032-1.03,-34.41551+8.7),
+                            // LatLng((39.22808+5.4)-1.03,(23.53516-11)+8.7),
+                            LatLng(64.58032,-34.41551),
+                            LatLng(39.22808,23.53516),
+                          ),
+                          imageProvider: AssetImage('assets/light_pollution.png'),
+                          opacity: 0.5,
+                        ),
+                      ],
+                    ),
                    MarkerLayer(
                      markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
                    ),

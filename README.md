@@ -1,22 +1,17 @@
 # photography_app
 
-A new Flutter project.
+To run:
+1. Clone the repository
+2. run `flutter create .` from the root folder
+3. Open the mac simulator app or android studio emulator and run `flutter run`
 
-> flutter emulators
-
-> flutter emulators --launch Medium_Phone_API_36.0 (or whatever yours is called)
-
-> flutter run
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Packages used:
+1. visibility_detector
+2. cupertino_icons
+3. http
+4. flutter_map
+5. latlong2
+6. flutter_map_cancellable_tile_provider
+7. flutter_map_math
+8. flutter_dotenv
+9. flutter_map_animations

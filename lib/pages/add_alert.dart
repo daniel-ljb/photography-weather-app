@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:weather_app/models/location_manager.dart';
 import '../models/alert.dart';
 import '../models/alert_manager.dart';
 
@@ -19,6 +21,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
   // Use unique names and explicit types
   Set<int> _precipitationSet = <int>{};
   Set<int> _cloudCoverageSet = <int>{};
+  Map<String,dynamic>? _selectedLocation;
 
   // Add controllers for the wheels
   final FixedExtentScrollController _daysController =
@@ -42,6 +45,8 @@ class _AddAlertPageState extends State<AddAlertPage> {
   Set<int> _selectedTimesOfDay = <int>{};
 
   int? _editIndex;
+
+  
 
   @override
   void didChangeDependencies() {
@@ -91,6 +96,9 @@ class _AddAlertPageState extends State<AddAlertPage> {
     _hoursController.jumpToItem(hoursIndex);
   }
 
+  final List<Map<String,dynamic>> _savedLocations = LocationManager().getLocations();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,6 +109,16 @@ class _AddAlertPageState extends State<AddAlertPage> {
         actions: [
           TextButton(
             onPressed: () {
+              // Check if location is selected
+              if (_selectedLocation == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a location'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                return;
+              }
               // Save alert
               final alert = Alert(
                 name:
@@ -111,6 +129,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
                 precipitation: Set<int>.from(_precipitationSet),
                 cloudCoverage: Set<int>.from(_cloudCoverageSet),
                 timesOfDay: Set<int>.from(_selectedTimesOfDay),
+                location: _selectedLocation!
               );
               if (_editIndex != null) {
                 AlertManager().updateAlert(_editIndex!, alert);
@@ -318,6 +337,40 @@ class _AddAlertPageState extends State<AddAlertPage> {
                   const SizedBox(height: 12),
                 ],
               ),
+            // Select location
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [const Text(
+                  "Select Location",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                  DropdownButton<Map<String,dynamic>>(
+                    isExpanded: true,
+                    value: _selectedLocation,
+                    hint: const Text('Choose a location'),
+                    items: _savedLocations.map((location) {
+                      return DropdownMenuItem<Map<String,dynamic>>(
+                        value: location,
+                        child: Text(location['name']),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        _selectedLocation = newValue;
+                      });
+                    },
+                  ),
+                ]
+              )
+            ),
+            
             const SizedBox(height: 24),
             // Precipitation
             Container(

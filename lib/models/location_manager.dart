@@ -54,6 +54,10 @@ class LocationManager {
     }
   }
 
+  List<Map<String,dynamic>> getLocations() {
+    return _savedLocations;
+  }
+
   // Method to add a location
   void addLocation(Map<String, dynamic> location) {
     // Prevent adding duplicates based on latitude and longitude within 10 meters

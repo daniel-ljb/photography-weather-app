@@ -121,12 +121,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       zoom: 10.0, // zoom level
     );
 
-    // TODO: bring up context menu automatically
-
-    // When returning from the detail page, refresh the UI to show saved locations
+    // Show context menu at the center of the screen
     setState(() {
-      // The list of saved locations is managed by the singleton LocationManager
-      // No local state update is needed here, just trigger a rebuild.
+      _tapLatLng = LatLng(location['lat'], location['lon']);
+      _tapPosition = Offset(
+        MediaQuery.of(context).size.width / 2,
+        MediaQuery.of(context).size.height / 2,
+      );
+      _showContextMenu = true;
     });
   }
 

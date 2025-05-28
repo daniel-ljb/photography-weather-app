@@ -32,7 +32,7 @@ class WeatherSearchBar extends StatefulWidget {
 
 class _WeatherSearchBarState extends State<WeatherSearchBar> {
   final WeatherService _weatherService = WeatherService();
-  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10)); // TODO: depuplicate, this and map page
+  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10));
   final FocusNode _focusNode = FocusNode();
 
   List<Map<String, dynamic>> _searchResults = [];

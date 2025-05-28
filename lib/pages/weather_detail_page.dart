@@ -48,9 +48,6 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
         });
       });
 
-      // TODO: change to use coords instead of place name
-      // We need the full location data to save it, so let's search for it.
-
       String coordinates = "${locationArg.split(',')[0]},${locationArg.split(',')[1]}";
       _searchAndFetchWeatherData(coordinates);
     } else {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/weather_service.dart'; // We'll need this later
 import 'package:intl/intl.dart'; // Import for date formatting
 import '../models/location_manager.dart'; // Import the new manager
+import 'dart:math';
 
 class WeatherDetailPage extends StatefulWidget {
   const WeatherDetailPage({super.key});
@@ -114,9 +115,37 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     if (_weatherData == null || _weatherData!['forecast'] == null) return [];
     final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
     final List<Map<String, dynamic>> allHours = [];
+    final now = DateTime.now();
+    
     for (var day in forecastDays) {
-      allHours.addAll((day['hour'] as List<dynamic>)
-          .map((hour) => hour as Map<String, dynamic>).toList());
+      final hourlyData = (day['hour'] as List<dynamic>)
+          .map((hour) => hour as Map<String, dynamic>)
+          .toList();
+      
+      // For the first day, find the current hour
+      if (day == forecastDays[0]) {
+        int startIndex = 0;
+        for (int i = 0; i < hourlyData.length; i++) {
+          final hourTime = DateTime.parse(hourlyData[i]['time']);
+          // Find the current hour (e.g., if it's 6:30, find 6:00)
+          if (hourTime.hour == now.hour) {
+            startIndex = i;
+            break;
+          }
+          // If we've passed the current hour, start from the next hour
+          if (hourTime.hour > now.hour) {
+            startIndex = i;
+            break;
+          }
+          // If loop finishes without finding a suitable hour, take the last hour
+          if (i == hourlyData.length - 1) startIndex = hourlyData.length - 1;
+        }
+        // Add hours from current time onwards for the first day
+        allHours.addAll(hourlyData.sublist(startIndex));
+      } else {
+        // Add all hours for subsequent days
+        allHours.addAll(hourlyData);
+      }
     }
     return allHours;
   }
@@ -242,6 +271,31 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
      return DateFormat('h a').format(dateTime); // e.g., 1 PM, 3 AM
   }
 
+  // Get wind direction as a compass direction
+  String _getWindDirection(int degrees) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    final index = ((degrees + 11.25) / 22.5).floor() % 16;
+    return directions[index];
+  }
+
+  // Get sun-related times for the selected day
+  Map<String, String> _getSunTimes() {
+    if (_weatherData == null || _weatherData!['forecast'] == null) return {};
+    
+    final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
+    if (_selectedDayIndex >= forecastDays.length) return {};
+    
+    final astro = forecastDays[_selectedDayIndex]['astro'];
+    return {
+      'sunrise': astro['sunrise'],
+      'sunset': astro['sunset'],
+      'moonrise': astro['moonrise'],
+      'moonset': astro['moonset'],
+      'moon_phase': astro['moon_phase'],
+      'moon_illumination': astro['moon_illumination'].toString(),
+    };
+  }
+
   @override
   void dispose() {
     _hourlyScrollController.dispose(); // Dispose the controller
@@ -255,12 +309,12 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
   @override
   Widget build(BuildContext context) {
     final allHourlyForecast = _getAllHourlyForecast(); // Get all hourly data
+    final sunTimes = _getSunTimes();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_locationName),
-         actions: [
-          // Green plus/check mark icon
+        actions: [
           IconButton(
             icon: Icon(
               _isLocationSaved ? Icons.check_circle : Icons.add_circle_outline,
@@ -272,112 +326,192 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(), // Show loading indicator
-            )
+          ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Text('Error: $_error'), // Show error message
-                )
+              ? Center(child: Text('Error: $_error'))
               : _weatherData != null
-                  ? Column(
-                      children: [
-                        // Horizontal scrollable days
-                        if (_weatherData!['forecast'] != null)
-                          SizedBox(
-                            height: 60,
-                            child: ListView.builder(
-                              controller: _dayScrollController, // Assign the controller
-                              scrollDirection: Axis.horizontal,
-                              itemCount: (_weatherData!['forecast']['forecastday'] as List).length,
-                              itemBuilder: (context, index) {
-                                final dayData = (_weatherData!['forecast']['forecastday'] as List)[index];
-                                final dateString = dayData['date'] as String;
-                                final dayDisplay = _getDayDisplay(dateString, index);
-                                final isSelected = index == _selectedDayIndex;
-                                 // Assign the GlobalKey to the day item
-                                final dayKey = _dayKeys[index] ?? GlobalKey();
-                                _dayKeys[index] = dayKey; // Store the key
+                  ? SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Day tabs
+                          if (_weatherData!['forecast'] != null)
+                            SizedBox(
+                              height: 60,
+                              child: ListView.builder(
+                                controller: _dayScrollController,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: (_weatherData!['forecast']['forecastday'] as List).length,
+                                itemBuilder: (context, index) {
+                                  final dayData = (_weatherData!['forecast']['forecastday'] as List)[index];
+                                  final dateString = dayData['date'] as String;
+                                  final dayDisplay = _getDayDisplay(dateString, index);
+                                  final isSelected = index == _selectedDayIndex;
+                                   // Assign the GlobalKey to the day item
+                                  final dayKey = _dayKeys[index] ?? GlobalKey();
+                                  _dayKeys[index] = dayKey; // Store the key
 
-                                return GestureDetector(
-                                  key: dayKey, // Assign the key
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedDayIndex = index;
-                                    });
-                                    // Scroll to the beginning of the selected day's hourly forecast
-                                    final startIndex = _getHourlyStartIndexForDay(index);
-                                    _hourlyScrollController.animateTo(
-                                      startIndex * 108.0, // Item width: 100 + 4*2 padding/margin
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeOut,
-                                    );
-                                    // Scroll the day tabs to make the selected day visible
-                                    _scrollToDayTab(index);
-                                  },
-                                  child: Container(
-                                    alignment: Alignment.center,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? Colors.blueAccent : Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: Text(
-                                      dayDisplay,
-                                      style: TextStyle(
-                                        color: isSelected ? Colors.white : Colors.black,
-                                        fontWeight: FontWeight.bold,
+                                  return GestureDetector(
+                                    key: dayKey, // Assign the key
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedDayIndex = index;
+                                      });
+                                      // Scroll to the beginning of the selected day's hourly forecast
+                                      final startIndex = _getHourlyStartIndexForDay(index);
+                                      _hourlyScrollController.animateTo(
+                                        startIndex * 108.0, // Item width: 100 + 4*2 padding/margin
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeOut,
+                                      );
+                                      // Scroll the day tabs to make the selected day visible
+                                      _scrollToDayTab(index);
+                                    },
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? Colors.blueAccent : Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(8.0),
+                                      ),
+                                      child: Text(
+                                        dayDisplay,
+                                        style: TextStyle(
+                                          color: isSelected ? Colors.white : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
+                                  );
+                                },
+                              ),
+                            ),
+                          const SizedBox(height: 16.0),
+                          
+                          // Hourly forecast with wind information
+                          SizedBox(
+                            height: 240,
+                            child: ListView.builder(
+                              controller: _hourlyScrollController,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: allHourlyForecast.length,
+                              itemBuilder: (context, index) {
+                                final hourData = allHourlyForecast[index];
+                                final time = _formatTime(hourData['time']);
+                                final icon = hourData['condition']['icon'];
+                                final temp = hourData['temp_c'].round();
+                                final chanceOfRain = hourData['chance_of_rain'];
+                                final rainAmount = hourData['precip_mm'];
+                                final windSpeed = hourData['wind_kph'].round();
+                                final windGust = hourData['gust_kph'].round();
+                                final windDegree = hourData['wind_degree'];
+                                final cloudCover = hourData['cloud'];
+
+                                return Container(
+                                  width: 100,
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey[300]!),
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Text(time, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      Image.network("https:$icon", width: 24, height: 24),
+                                      Text('$temp°C'),
+                                      Text('$chanceOfRain%'),
+                                      Text('$rainAmount mm'),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Transform.rotate(
+                                            angle: (windDegree * pi) / 180,
+                                            child: const Icon(Icons.arrow_upward, size: 16),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text('$windSpeed km/h'),
+                                              Text('Gust: $windGust', style: const TextStyle(fontSize: 12)),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.cloud, size: 16),
+                                          const SizedBox(width: 4),
+                                          Text('$cloudCover%'),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 );
                               },
                             ),
                           ),
-                        const SizedBox(height: 16.0),
-                        // Hourly forecast for all days (horizontal scroll)
-                        SizedBox(
-                         height: 160,
-                         child: ListView.builder(
-                           controller: _hourlyScrollController, // Assign the controller
-                           scrollDirection: Axis.horizontal,
-                           itemCount: allHourlyForecast.length,
-                           itemBuilder: (context, index) {
-                             final hourData = allHourlyForecast[index];
-                             final time = _formatTime(hourData['time']);
-                             final icon = hourData['condition']['icon'];
-                             final temp = hourData['temp_c'].round();
-                             final chanceOfRain = hourData['chance_of_rain'];
-                             final rainAmount = hourData['precip_mm'];
 
-                             return Container(
-                               width: 100,
-                               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                               margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                               decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(8.0),
-                               ),
-                               child: Column(
-                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                 children: [
-                                   Text(time, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                   Image.network("https:$icon", width: 24, height: 24),
-                                   Text('$temp°C'),
-                                   Text('$chanceOfRain%'),
-                                   Text('$rainAmount mm'),
-                                 ],
-                               ),
-                             );
-                           },
-                         ),
-                       ),
-                      ],
+                          // Sun and Moon Information
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const Icon(Icons.wb_sunny, size: 40, color: Colors.orange),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Sunrise: ${sunTimes['sunrise'] ?? '--:--'}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        Text(
+                                          'Sunset: ${sunTimes['sunset'] ?? '--:--'}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: [
+                                        const Icon(Icons.nightlight_round, size: 40, color: Colors.blueGrey),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Moonrise: ${sunTimes['moonrise'] ?? '--:--'}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        Text(
+                                          'Moonset: ${sunTimes['moonset'] ?? '--:--'}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Center(
+                                  child: Text(
+                                    'Moon Phase: ${sunTimes['moon_phase'] ?? 'Unknown'}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     )
-                  : const Center(
-                      child: Text('No weather data available.'), // Handle case with no data
-                    ),
+                  : const Center(child: Text('No weather data available.')),
     );
   }
 }

@@ -165,40 +165,43 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     return startIndex;
   }
 
-  // Update the selected day index based on the scroll position and scroll day tabs
-  void _updateSelectedDayOnScroll() {
-    if (!_hourlyScrollController.hasClients ||
-        !_dayScrollController.hasClients ||
-        _weatherData == null)
-      return;
+void _updateSelectedDayOnScroll() {
+  if (!_hourlyScrollController.hasClients ||
+      !_dayScrollController.hasClients ||
+      _weatherData == null) return;
 
-    const double itemWidth = 108.0;
-    final double scrollOffset = _hourlyScrollController.offset;
+  const double itemWidth = 108.0;
+  final double scrollOffset = _hourlyScrollController.offset;
 
-    int currentHourIndex = (scrollOffset / itemWidth).floor();
+  int currentHourIndex = (scrollOffset / itemWidth).floor();
 
-    int dayIndex = 0;
-    int hourCount = 0;
-    final forecastDays =
-        _weatherData!['forecast']['forecastday'] as List<dynamic>;
-    for (int i = 0; i < forecastDays.length; i++) {
-      final hoursInDay = (forecastDays[i]['hour'] as List<dynamic>).length;
-      if (currentHourIndex < hourCount + hoursInDay) {
-        dayIndex = i;
-        break;
+  final forecastDays = _weatherData!['forecast']['forecastday'] as List<dynamic>;
+
+  // Flatten the hour list and keep track of each hour's day index
+  final List<int> hourToDayIndex = [];
+  final now = DateTime.now();
+
+  for (int dayIdx = 0; dayIdx < forecastDays.length; dayIdx++) {
+    final hours = forecastDays[dayIdx]['hour'] as List<dynamic>;
+    for (final hour in hours) {
+      final hourTime = DateTime.parse(hour['time']);
+      if (hourTime.isAfter(now.subtract(const Duration(minutes: 59)))) {
+        hourToDayIndex.add(dayIdx);
       }
-      hourCount += hoursInDay;
-    }
-
-    if (_selectedDayIndex != dayIndex) {
-      setState(() {
-        _selectedDayIndex = dayIndex;
-      });
-
-      // Scroll the day tabs to make the selected day visible if not already
-      _scrollToDayTab(dayIndex);
     }
   }
+
+  if (currentHourIndex >= 0 && currentHourIndex < hourToDayIndex.length) {
+    int newDayIndex = hourToDayIndex[currentHourIndex];
+    if (_selectedDayIndex != newDayIndex) {
+      setState(() {
+        _selectedDayIndex = newDayIndex;
+      });
+      _scrollToDayTab(newDayIndex);
+    }
+  }
+}
+
 
   // Scroll the day tabs to bring the widget at the given index into view
   void _scrollToDayTab(int index) {

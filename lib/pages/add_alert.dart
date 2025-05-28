@@ -21,7 +21,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
   // Use unique names and explicit types
   Set<int> _precipitationSet = <int>{};
   Set<int> _cloudCoverageSet = <int>{};
-  Map<String,dynamic>? _selectedLocation;
+  Map<String, dynamic>? _selectedLocation;
 
   // Add controllers for the wheels
   final FixedExtentScrollController _daysController =
@@ -45,8 +45,6 @@ class _AddAlertPageState extends State<AddAlertPage> {
   Set<int> _selectedTimesOfDay = <int>{};
 
   int? _editIndex;
-
-  
 
   @override
   void didChangeDependencies() {
@@ -96,8 +94,8 @@ class _AddAlertPageState extends State<AddAlertPage> {
     _hoursController.jumpToItem(hoursIndex);
   }
 
-  final List<Map<String,dynamic>> _savedLocations = LocationManager().getLocations();
-
+  final List<Map<String, dynamic>> _savedLocations =
+      LocationManager().getLocations();
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +127,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
                 precipitation: Set<int>.from(_precipitationSet),
                 cloudCoverage: Set<int>.from(_cloudCoverageSet),
                 timesOfDay: Set<int>.from(_selectedTimesOfDay),
-                location: _selectedLocation!
+                location: _selectedLocation!,
               );
               if (_editIndex != null) {
                 AlertManager().updateAlert(_editIndex!, alert);
@@ -346,31 +344,33 @@ class _AddAlertPageState extends State<AddAlertPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
-                children: [const Text(
-                  "Select Location",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                  DropdownButton<Map<String,dynamic>>(
+                children: [
+                  const Text(
+                    "Select Location",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButton<Map<String, dynamic>>(
                     isExpanded: true,
                     value: _selectedLocation,
                     hint: const Text('Choose a location'),
-                    items: _savedLocations.map((location) {
-                      return DropdownMenuItem<Map<String,dynamic>>(
-                        value: location,
-                        child: Text(location['name']),
-                      );
-                    }).toList(),
+                    items:
+                        _savedLocations.map((location) {
+                          return DropdownMenuItem<Map<String, dynamic>>(
+                            value: location,
+                            child: Text(location['name']),
+                          );
+                        }).toList(),
                     onChanged: (newValue) {
                       setState(() {
                         _selectedLocation = newValue;
                       });
                     },
                   ),
-                ]
-              )
+                ],
+              ),
             ),
-            
+
             const SizedBox(height: 24),
             // Precipitation
             Container(

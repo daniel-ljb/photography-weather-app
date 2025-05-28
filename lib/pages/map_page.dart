@@ -15,9 +15,9 @@ import '../models/location_manager.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
-  
+
   final String title;
-  
+
   @override
   State<MapPage> createState() => _MapPageState();
 }
@@ -25,11 +25,14 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   // Search bar
   final TextEditingController _searchController = TextEditingController();
-  final WeatherSearchBarController _searchBarHideController = WeatherSearchBarController();
+  final WeatherSearchBarController _searchBarHideController =
+      WeatherSearchBarController();
 
   // Map
-  late final AnimatedMapController _mapController = AnimatedMapController(vsync: this);
-  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10));
+  late final AnimatedMapController _mapController = AnimatedMapController(
+    vsync: this,
+  );
+  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15), LatLng(40, 10));
 
   // Track the state of each layer
   bool _temperatureLayer = false;
@@ -41,25 +44,38 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   bool _shadeLayer = false;
 
   // Helper method to check if any layer is selected
-  bool get _isAnyLayerSelected => _temperatureLayer || _precipitationLayer || 
-      _cloudLayer || _windLayer || _visibilityLayer || _lightPollutionLayer || _shadeLayer;
+  bool get _isAnyLayerSelected =>
+      _temperatureLayer ||
+      _precipitationLayer ||
+      _cloudLayer ||
+      _windLayer ||
+      _visibilityLayer ||
+      _lightPollutionLayer ||
+      _shadeLayer;
 
   // Context menu
   Offset? _tapPosition;
   LatLng? _tapLatLng;
   bool _showContextMenu = false;
 
-
   // For the time slider
   int selectedTimeIndex = 0;
-  final int _currentUNIX = (DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day,DateTime.now().hour).toUtc().millisecondsSinceEpoch) ~/ 1000;
+  final int _currentUNIX =
+      (DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+        DateTime.now().hour,
+      ).toUtc().millisecondsSinceEpoch) ~/
+      1000;
   int? _setTime;
 
   // Add controller for DraggableScrollableSheet
   final DraggableScrollableController _sheetController =
       DraggableScrollableController();
 
-  final String _openWeatherMapApiKey = dotenv.env['OPEN_WEATHER_MAP_API_KEY'] ?? '';
+  final String _openWeatherMapApiKey =
+      dotenv.env['OPEN_WEATHER_MAP_API_KEY'] ?? '';
 
   @override
   void initState() {
@@ -68,16 +84,19 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     // Set the initial location from the first saved location if available
     final savedLocations = LocationManager().savedLocations;
     if (savedLocations.isNotEmpty) {
-       // Move map to the initial saved location
-       WidgetsBinding.instance.addPostFrameCallback((_) {
-         _mapController.animateTo(
-           dest: LatLng(savedLocations.first['lat'], savedLocations.first['lon']),
-           zoom: 6.0, // initial zoom level
-         );
-       });
+      // Move map to the initial saved location
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mapController.animateTo(
+          dest: LatLng(
+            savedLocations.first['lat'],
+            savedLocations.first['lon'],
+          ),
+          zoom: 6.0, // initial zoom level
+        );
+      });
     }
   }
-  
+
   // Helper method to build markers from saved locations
   List<Marker> _buildLocationMarkers() {
     final savedLocations = LocationManager().savedLocations;
@@ -93,7 +112,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             Navigator.pushNamed(
               context,
               '/weather/detail',
-              arguments: "${location['lat']},${location['lon']},${location['name']}",
+              arguments:
+                  "${location['lat']},${location['lon']},${location['name']}",
             ).then((result) {
               // If a location was removed, refresh the state
               if (result == true) {
@@ -101,7 +121,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               }
             });
           },
-          child: Tooltip( // Add a tooltip for hovering/long press
+          child: Tooltip(
+            // Add a tooltip for hovering/long press
             message: location['name'],
             child: const Icon(
               Icons.location_on, // Standard location pin icon
@@ -154,7 +175,10 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -212,7 +236,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               title: 'Light Pollution',
               icon: Icons.flourescent,
               value: _lightPollutionLayer,
-              onChanged: (value) => setState(() => _lightPollutionLayer = value),
+              onChanged:
+                  (value) => setState(() => _lightPollutionLayer = value),
             ),
             LayerToggle(
               title: 'Shade',
@@ -228,92 +253,106 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           // Main content
           Positioned.fill(
             child: FlutterMap(
-                mapController: _mapController.mapController,
-                options: MapOptions(
-                  cameraConstraint: CameraConstraint.contain(bounds:mapBounds),
-                  interactionOptions: const InteractionOptions(flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.scrollWheelZoom),
-                  initialCenter: LatLng(53.5,-3),
-                  initialZoom: 6,
-                  maxZoom: 19,
-                  onLongPress:(tapPosition, point) {
-                    setState(() {
-                      _tapPosition = Offset(tapPosition.global.dx, tapPosition.global.dy);
-                      _tapLatLng = point;
-                      _showContextMenu = true;
-                    });
-                  },
-                  onPointerDown: (tapPosition, point) {
-                    // print("tap");
-                    _searchBarHideController.removeOverlay();
-                    if (_showContextMenu) {
-                      setState(() {
-                        _showContextMenu = false;
-                        // Stop showing search bar
-                      });
-                    }
-                  },
+              mapController: _mapController.mapController,
+              options: MapOptions(
+                cameraConstraint: CameraConstraint.contain(bounds: mapBounds),
+                interactionOptions: const InteractionOptions(
+                  flags:
+                      InteractiveFlag.pinchZoom |
+                      InteractiveFlag.drag |
+                      InteractiveFlag.scrollWheelZoom,
                 ),
-                children: [
-                  // Map
+                initialCenter: LatLng(53.5, -3),
+                initialZoom: 6,
+                maxZoom: 19,
+                onLongPress: (tapPosition, point) {
+                  setState(() {
+                    _tapPosition = Offset(
+                      tapPosition.global.dx,
+                      tapPosition.global.dy,
+                    );
+                    _tapLatLng = point;
+                    _showContextMenu = true;
+                  });
+                },
+                onPointerDown: (tapPosition, point) {
+                  // print("tap");
+                  _searchBarHideController.removeOverlay();
+                  if (_showContextMenu) {
+                    setState(() {
+                      _showContextMenu = false;
+                      // Stop showing search bar
+                    });
+                  }
+                },
+              ),
+              children: [
+                // Map
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.photography.app',
+                ),
+
+                // Temperature Layer
+                if (_temperatureLayer)
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    // urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
+                    urlTemplate:
+                        'http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&palette=0:45A7FF;10:E3F043;25:FA6E43&opacity=0.7&date=$_setTime',
                     userAgentPackageName: 'com.photography.app',
-                   ),
+                  ),
 
-                   // Temperature Layer
-                   if (_temperatureLayer)
-                    TileLayer(
-                      // urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
-                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&palette=0:45A7FF;10:E3F043;25:FA6E43&opacity=0.7&date=$_setTime',
-                      userAgentPackageName: 'com.photography.app',
-                    ),
+                // Precipitation Layer
+                if (_precipitationLayer)
+                  TileLayer(
+                    // urlTemplate: 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.6',
+                    urlTemplate:
+                        'http://maps.openweathermap.org/maps/2.0/weather/PA0/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&opacity=0.7&date=$_setTime',
+                    userAgentPackageName: 'com.photography.app',
+                  ),
 
-                  // Precipitation Layer
-                  if (_precipitationLayer)
-                    TileLayer(
-                      // urlTemplate: 'https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.6',
-                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/PA0/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&opacity=0.7&date=$_setTime',
-                      userAgentPackageName: 'com.photography.app',
-                    ),
+                // Cloud Coverage Layer
+                if (_cloudLayer)
+                  TileLayer(
+                    // urlTemplate: 'https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.5',
+                    urlTemplate:
+                        'http://maps.openweathermap.org/maps/2.0/weather/CL/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&opacity=0.7&date=$_setTime',
+                    userAgentPackageName: 'com.photography.app',
+                  ),
 
-                  // Cloud Coverage Layer
-                  if (_cloudLayer)
-                    TileLayer(
-                      // urlTemplate: 'https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.5',
-                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/CL/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&opacity=0.7&date=$_setTime',
-                      userAgentPackageName: 'com.photography.app',
-                    ),
-
-                  // Wind Speed Layer
-                  if (_windLayer)
-                    TileLayer(
-                      // urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.7',
-                      urlTemplate: 'http://maps.openweathermap.org/maps/2.0/weather/WND/{z}/{x}/{y}?arrow_step=16&appid=$_openWeatherMapApiKey&date=$_setTime',
-                      userAgentPackageName: 'com.photography.app',
-                    ),
-                  if (_lightPollutionLayer)
-                    OverlayImageLayer(
-                      overlayImages: [
-                        OverlayImage( // Unrotated
-                          bounds: LatLngBounds(
-                            // LatLng(64.58032-1.03,-34.41551+8.7),
-                            // LatLng((39.22808+5.4)-1.03,(23.53516-11)+8.7),
-                            LatLng(64.58032,-34.41551),
-                            LatLng(39.22808,23.53516),
-                          ),
-                          imageProvider: AssetImage('assets/light_pollution.png'),
-                          opacity: 0.5,
+                // Wind Speed Layer
+                if (_windLayer)
+                  TileLayer(
+                    // urlTemplate: 'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey&opacity=0.7',
+                    urlTemplate:
+                        'http://maps.openweathermap.org/maps/2.0/weather/WND/{z}/{x}/{y}?arrow_step=16&appid=$_openWeatherMapApiKey&date=$_setTime',
+                    userAgentPackageName: 'com.photography.app',
+                  ),
+                if (_lightPollutionLayer)
+                  OverlayImageLayer(
+                    overlayImages: [
+                      OverlayImage(
+                        // Unrotated
+                        bounds: LatLngBounds(
+                          // LatLng(64.58032-1.03,-34.41551+8.7),
+                          // LatLng((39.22808+5.4)-1.03,(23.53516-11)+8.7),
+                          LatLng(64.58032, -34.41551),
+                          LatLng(39.22808, 23.53516),
                         ),
-                      ],
-                    ),
-                   MarkerLayer(
-                     markers: _buildLocationMarkers(), // Call the helper method to get the list of markers
-                   ),
-                   ],
+                        imageProvider: AssetImage('assets/light_pollution.png'),
+                        opacity: 0.5,
+                      ),
+                    ],
+                  ),
+                MarkerLayer(
+                  markers:
+                      _buildLocationMarkers(), // Call the helper method to get the list of markers
+                ),
+              ],
             ),
           ),
           // Context Menu
-          if (_showContextMenu && _tapPosition != null) 
+          if (_showContextMenu && _tapPosition != null)
             HoldContextMenu(
               tapLatLng: _tapLatLng,
               tapPosition: _tapPosition,
@@ -328,59 +367,67 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             top: MediaQuery.of(context).padding.top,
             left: 16,
             right: 16,
-            child: Column(children: [
-              Row(
+            child: Column(
               children: [
-                Builder(
-                  builder: (context) => Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        Scaffold.of(context).openDrawer();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
+                Row(
+                  children: [
+                    Builder(
+                      builder:
+                          (context) => Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () {
+                                Scaffold.of(context).openDrawer();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.layers,
+                                  color: Colors.blue,
+                                ),
+                              ),
                             ),
-                          ],
-                        ),
-                        child: const Icon(Icons.layers, color: Colors.blue),
+                          ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: WeatherSearchBar(
+                        controller: _searchController,
+                        weathersearchbarcontroller: _searchBarHideController,
+                        onLocationSelected: _onLocationSelected,
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: WeatherSearchBar(
-                    controller: _searchController,
-                    weathersearchbarcontroller: _searchBarHideController,
-                    onLocationSelected: _onLocationSelected,
+                const SizedBox(height: 12),
+                if (_isAnyLayerSelected)
+                  TimeSlider(
+                    currentIndex: selectedTimeIndex,
+                    onChanged: (newIndex) {
+                      setState(() {
+                        selectedTimeIndex = newIndex;
+                        _setTime = _currentUNIX + 3600 * selectedTimeIndex;
+                      });
+                    },
+                    labels: List.generate(
+                      12 + 1,
+                      (i) => i == 0 ? 'Now' : '+${i}h',
+                    ),
                   ),
-                ),
               ],
             ),
-            const SizedBox(height:12),
-            if (_isAnyLayerSelected)
-              TimeSlider(
-                currentIndex: selectedTimeIndex,
-                onChanged: (newIndex) {
-                  setState(() {
-                    selectedTimeIndex = newIndex;
-                    _setTime = _currentUNIX + 3600 * selectedTimeIndex;
-                  });
-                },
-                labels: List.generate(12+1, (i) => i == 0 ? 'Now' : '+${i}h'),
-              ),
-            ],
-            )
           ),
           // Alert button in bottom right
           Positioned(
@@ -406,7 +453,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             snapSizes: const [0.3, 0.9],
             builder: (context, scrollController) {
               return Container(
-                  decoration: const BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                   boxShadow: [
@@ -422,36 +469,49 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                   padding: EdgeInsets.zero,
                   children: [
                     // Display saved locations using ForecastBox
-                     if (savedLocations.isEmpty)
+                    if (savedLocations.isEmpty)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                        child: Center(child: Text('Search for locations to save them here.', style: TextStyle(fontSize: 16, color: Colors.grey[600]))),
+                        child: Center(
+                          child: Text(
+                            'Search for locations to save them here.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
                       ) // Message when no locations are saved
                     else
-                       ListView.builder(
+                      ListView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemCount: savedLocations.length,
                         itemBuilder: (context, index) {
                           final location = savedLocations[index];
                           return Padding(
-                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 8.0,
+                            ),
                             child: ForecastBox(
                               location: location['name'],
-                              coordinates: "${location['lat']},${location['lon']}",
-                               onTap: () {
-                                 // Navigate to the detailed weather view for the tapped saved location
-                                 Navigator.pushNamed(
-                                   context,
-                                   '/weather/detail',
-                                   arguments: "${location['lat']},${location['lon']},${location['name']}",
-                                 ).then((result) {
-                                   // If a location was removed, refresh the state
-                                   if (result == true) {
-                                     setState(() {});
-                                   }
-                                 });
-                               },
+                              coordinates:
+                                  "${location['lat']},${location['lon']}",
+                              onTap: () {
+                                // Navigate to the detailed weather view for the tapped saved location
+                                Navigator.pushNamed(
+                                  context,
+                                  '/weather/detail',
+                                  arguments:
+                                      "${location['lat']},${location['lon']},${location['name']}",
+                                ).then((result) {
+                                  // If a location was removed, refresh the state
+                                  if (result == true) {
+                                    setState(() {});
+                                  }
+                                });
+                              },
                             ),
                           );
                         },
@@ -464,6 +524,5 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         ],
       ),
     );
-  }  
+  }
 }
-

@@ -17,20 +17,24 @@ class ReverseGeocoding {
   Future<Map<String, dynamic>> getLocation(LatLng location) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reverse?key=$apiKey&lat=${location.latitude}&lon=${location.longitude}&normalizecity=1&format=json'),
+        Uri.parse(
+          '$baseUrl/reverse?key=$apiKey&lat=${location.latitude}&lon=${location.longitude}&normalizecity=1&format=json',
+        ),
       );
 
       if (response.statusCode == 200) {
-        Map<String, dynamic> json_decoded = json.decode(response.body)['address'];
+        Map<String, dynamic> json_decoded =
+            json.decode(response.body)['address'];
         if (json_decoded['city'] == null) {
           json_decoded['city'] = "";
         }
         return json_decoded;
-        
       } else if (response.statusCode == 404) {
         throw NoLocationException('No Place');
       } else {
-        throw Exception('Failed the http request Status code: ${response.statusCode}\n${response.body}');
+        throw Exception(
+          'Failed the http request Status code: ${response.statusCode}\n${response.body}',
+        );
       }
     } catch (e) {
       print(dotenv.env['LOCATIONIQ_API_KEY']);
@@ -38,4 +42,4 @@ class ReverseGeocoding {
       throw Exception('Error fetching location data: $e');
     }
   }
-} 
+}

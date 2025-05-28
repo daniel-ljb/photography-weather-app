@@ -52,4 +52,4 @@ class LayerToggle extends StatelessWidget {
       ),
     );
   }
-} 
+}

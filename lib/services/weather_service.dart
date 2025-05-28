@@ -9,10 +9,11 @@ class WeatherService {
   final String apiKey = dotenv.env['WEATHER_API_KEY'] ?? '';
 
   Future<Map<String, dynamic>> getWeatherForecast(String coordinates) async {
-
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$coordinates&days=14&aqi=no'),
+        Uri.parse(
+          '$baseUrl/forecast.json?key=$apiKey&q=$coordinates&days=14&aqi=no',
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -24,7 +25,7 @@ class WeatherService {
       throw Exception('Error fetching weather data: $e');
     }
   }
-  
+
   Future<List<Map<String, dynamic>>> searchLocations(String query) async {
     try {
       final response = await http.get(
@@ -33,13 +34,17 @@ class WeatherService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((location) => {
-          'name': location['name'],
-          'region': location['region'],
-          'country': location['country'],
-          'lat': location['lat'],
-          'lon': location['lon'],
-        }).toList();
+        return data
+            .map(
+              (location) => {
+                'name': location['name'],
+                'region': location['region'],
+                'country': location['country'],
+                'lat': location['lat'],
+                'lon': location['lon'],
+              },
+            )
+            .toList();
       } else {
         throw Exception('Failed to search locations');
       }
@@ -47,4 +52,4 @@ class WeatherService {
       throw Exception('Error searching locations: $e');
     }
   }
-} 
+}

@@ -5,7 +5,7 @@ import 'package:weather_app/services/reverse_geocoding.dart';
 class LocationManager {
   // Singleton instance
   static final LocationManager _instance = LocationManager._internal();
-  
+
   // API to get the location
   final ReverseGeocoding _reverseGeocoding = ReverseGeocoding();
 
@@ -35,9 +35,11 @@ class LocationManager {
   List<Map<String, dynamic>> get savedLocations => _savedLocations;
 
   Future addLocationLatLng(LatLng coords) async {
-    if (!isLocationSaved({'lat': coords.latitude, 'lon':coords.longitude})) {
+    if (!isLocationSaved({'lat': coords.latitude, 'lon': coords.longitude})) {
       try {
-        Map<String,dynamic> placename = await _reverseGeocoding.getLocation(coords);
+        Map<String, dynamic> placename = await _reverseGeocoding.getLocation(
+          coords,
+        );
         _savedLocations.add({
           'name': placename['city'],
           'region': placename['county'],
@@ -54,7 +56,7 @@ class LocationManager {
     }
   }
 
-  List<Map<String,dynamic>> getLocations() {
+  List<Map<String, dynamic>> getLocations() {
     return _savedLocations;
   }
 
@@ -68,22 +70,21 @@ class LocationManager {
 
   void removeLocation(Map<String, dynamic> location) {
     // Remove the location based on its name and country
-    _savedLocations.removeWhere(
-      (loc) => withinTenMetres(loc,location)
-    );
+    _savedLocations.removeWhere((loc) => withinTenMetres(loc, location));
   }
 
   bool isLocationSaved(Map<String, dynamic> location) {
-    return _savedLocations.any(
-      (loc) => withinTenMetres(loc,location)
-    );
+    return _savedLocations.any((loc) => withinTenMetres(loc, location));
   }
 
   bool withinTenMetres(Map<String, dynamic> loc1, Map<String, dynamic> loc2) {
     return FlutterMapMath().distanceBetween(
-      loc1['lat'],loc1['lon'],
-      loc2['lat'],loc2['lon'],
-      "meters"
-    ) <= 10;
+          loc1['lat'],
+          loc1['lon'],
+          loc2['lat'],
+          loc2['lon'],
+          "meters",
+        ) <=
+        10;
   }
-} 
+}

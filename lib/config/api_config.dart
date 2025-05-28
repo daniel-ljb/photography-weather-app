@@ -8,4 +8,4 @@ class ApiConfig {
     }
     return key;
   }
-} 
+}

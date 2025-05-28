@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 // this just has the comments from the generated file
 
-
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});
 

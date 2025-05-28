@@ -20,4 +20,4 @@ class AlertManager {
   void updateAlert(int index, Alert alert) {
     _alerts[index] = alert;
   }
-} 
+}

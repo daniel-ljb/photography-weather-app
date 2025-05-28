@@ -17,7 +17,6 @@ class WeatherSearchBar extends StatefulWidget {
   final String hintText;
   final Function(Map<String, dynamic>)? onLocationSelected;
 
-
   const WeatherSearchBar({
     super.key,
     required this.controller,
@@ -32,7 +31,7 @@ class WeatherSearchBar extends StatefulWidget {
 
 class _WeatherSearchBarState extends State<WeatherSearchBar> {
   final WeatherService _weatherService = WeatherService();
-  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15),  LatLng(40, 10));
+  final LatLngBounds mapBounds = LatLngBounds(LatLng(62, -15), LatLng(40, 10));
   final FocusNode _focusNode = FocusNode();
 
   List<Map<String, dynamic>> _searchResults = [];
@@ -90,7 +89,14 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
     try {
       final results = await _weatherService.searchLocations(query);
       setState(() {
-        _searchResults = results.where((location) => mapBounds.contains(LatLng(location["lat"], location["lon"]))).toList();
+        _searchResults =
+            results
+                .where(
+                  (location) => mapBounds.contains(
+                    LatLng(location["lat"], location["lon"]),
+                  ),
+                )
+                .toList();
         _isSearching = false;
       });
       _showOverlay();
@@ -111,43 +117,52 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
     final size = renderBox.size;
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: size.width,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: Offset(0, size.height - 1),
-          child: Material(
-            elevation: 4,
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12), top: Radius.circular(12)),
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(12), top: Radius.circular(12)),
-              ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                itemCount: _searchResults.length,
-                itemBuilder: (context, index) {
-                  final location = _searchResults[index];
-                  return ListTile(
-                    title: Text(location['name']),
-                    subtitle: Text('${location['region']}, ${location['country']}'),
-                    onTap: () {
-                      widget.onLocationSelected?.call(location);
-                      _removeOverlay();
+      builder:
+          (context) => Positioned(
+            width: size.width,
+            child: CompositedTransformFollower(
+              link: _layerLink,
+              showWhenUnlinked: false,
+              offset: Offset(0, size.height - 1),
+              child: Material(
+                elevation: 4,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(12),
+                  top: Radius.circular(12),
+                ),
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(12),
+                      top: Radius.circular(12),
+                    ),
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: _searchResults.length,
+                    itemBuilder: (context, index) {
+                      final location = _searchResults[index];
+                      return ListTile(
+                        title: Text(location['name']),
+                        subtitle: Text(
+                          '${location['region']}, ${location['country']}',
+                        ),
+                        onTap: () {
+                          widget.onLocationSelected?.call(location);
+                          _removeOverlay();
+                        },
+                      );
                     },
-                  );
-                },
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
     );
 
     Overlay.of(context).insert(_overlayEntry!);
@@ -207,4 +222,4 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
       ),
     );
   }
-} 
+}

@@ -77,16 +77,16 @@ class _ForecastBoxState extends State<ForecastBox> {
         _weatherData = data;
         _isLoading = false;
       });
-      
+
       // Set initial date after data is fetched
       final forecast = _getHourlyForecast();
       if (forecast.isNotEmpty) {
         final time = forecast[0]['time'] as DateTime;
         setState(() {
-           _currentDate = _formatDate(time);
+          _currentDate = _formatDate(time);
         });
       }
-        } catch (e) {
+    } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -96,79 +96,84 @@ class _ForecastBoxState extends State<ForecastBox> {
 
   List<Map<String, dynamic>> _getHourlyForecast() {
     if (_weatherData == null) return [];
-    
+
     final now = DateTime.now();
     final List<Map<String, dynamic>> allHours = [];
-    
+
     // Get all forecast days
     final forecastDays = _weatherData!['forecast']['forecastday'] as List;
-    
+
     // Process each day's hourly data
     for (var day in forecastDays) {
       final hourlyData = day['hour'] as List;
-      
+
       // For the first day, find the current hour or the next hour
       if (day == forecastDays[0]) {
         int startIndex = 0;
-         for (int i = 0; i < hourlyData.length; i++) {
+        for (int i = 0; i < hourlyData.length; i++) {
           final hourTime = DateTime.parse(hourlyData[i]['time']);
           // Find the first hour greater than or equal to the current time
           // Include the current hour if its minute is 0
-          if (hourTime.isAfter(now) || (hourTime.isAtSameMomentAs(now) && hourTime.minute == 0)) {
-             // If it's exactly the current hour, include it. Otherwise, start from the next hour.
+          if (hourTime.isAfter(now) ||
+              (hourTime.isAtSameMomentAs(now) && hourTime.minute == 0)) {
+            // If it's exactly the current hour, include it. Otherwise, start from the next hour.
             startIndex = i; // Start from this hour
-             break;
+            break;
           }
-           // If loop finishes without finding an hour >= now, take the last hour
-           if (i == hourlyData.length -1) startIndex = hourlyData.length - 1;
+          // If loop finishes without finding an hour >= now, take the last hour
+          if (i == hourlyData.length - 1) startIndex = hourlyData.length - 1;
         }
 
         // Add hours from current time onwards for the first day
-        allHours.addAll(hourlyData.sublist(startIndex).map((hour) {
-          final time = DateTime.parse(hour['time']);
-          return {
-            'time': time,
-            'temp_c': hour['temp_c'],
-            'condition': hour['condition']['icon'],
-            'isMidnight': time.hour == 0,
-          };
-        }));
+        allHours.addAll(
+          hourlyData.sublist(startIndex).map((hour) {
+            final time = DateTime.parse(hour['time']);
+            return {
+              'time': time,
+              'temp_c': hour['temp_c'],
+              'condition': hour['condition']['icon'],
+              'isMidnight': time.hour == 0,
+            };
+          }),
+        );
       } else {
         // Add all hours for subsequent days
-        allHours.addAll(hourlyData.map((hour) {
-           final time = DateTime.parse(hour['time']);
-          return {
-            'time': time,
-            'temp_c': hour['temp_c'],
-            'condition': hour['condition']['icon'],
-            'isMidnight': time.hour == 0,
-          };
-        }));
+        allHours.addAll(
+          hourlyData.map((hour) {
+            final time = DateTime.parse(hour['time']);
+            return {
+              'time': time,
+              'temp_c': hour['temp_c'],
+              'condition': hour['condition']['icon'],
+              'isMidnight': time.hour == 0,
+            };
+          }),
+        );
       }
     }
-    
+
     return allHours;
   }
 
-   Map<String, dynamic>? _getAstroDataForCurrentDate() {
-     if (_weatherData == null || _currentDate.isEmpty) return null;
+  Map<String, dynamic>? _getAstroDataForCurrentDate() {
+    if (_weatherData == null || _currentDate.isEmpty) return null;
 
-     final forecastDays = _weatherData!['forecast']['forecastday'] as List;
-     try {
-        // Parse the date from the header (MM/DD)
-        // Need to be careful with year for parsing, let's find the actual DateTime object
-        // from the forecast data that matches the current date string.
-        for (var day in forecastDays) {
-           final dayDate = DateTime.parse(day['date']);
-           if (_formatDate(dayDate) == _currentDate) {
-             return day['astro'];
-           }
+    final forecastDays = _weatherData!['forecast']['forecastday'] as List;
+    try {
+      // Parse the date from the header (MM/DD)
+      // Need to be careful with year for parsing, let's find the actual DateTime object
+      // from the forecast data that matches the current date string.
+      for (var day in forecastDays) {
+        final dayDate = DateTime.parse(day['date']);
+        if (_formatDate(dayDate) == _currentDate) {
+          return day['astro'];
         }
-     } catch (e) {
-        print('Error parsing date or finding astro data: $e');
-     }
-     return null;
-   }
+      }
+    } catch (e) {
+      print('Error parsing date or finding astro data: $e');
+    }
+    return null;
+  }
 
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:00';
@@ -190,7 +195,16 @@ class _ForecastBoxState extends State<ForecastBox> {
   };
 
   String _formatDate(DateTime time) {
-    final suffix = time.day > 3 && time.day < 21 ? 'th' : time.day % 10 == 1 ? 'st' : time.day % 10 == 2 ? 'nd' : time.day % 10 == 3 ? 'rd' : 'th';
+    final suffix =
+        time.day > 3 && time.day < 21
+            ? 'th'
+            : time.day % 10 == 1
+            ? 'st'
+            : time.day % 10 == 2
+            ? 'nd'
+            : time.day % 10 == 3
+            ? 'rd'
+            : 'th';
     return '${time.day}$suffix ${months[time.month]}';
   }
 
@@ -215,128 +229,152 @@ class _ForecastBoxState extends State<ForecastBox> {
             ),
           ],
         ),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
+        child:
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
                 ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Couldn't Load Weather Data",
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      TextButton(
+                        onPressed: _fetchWeatherData,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+                : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        const SizedBox(height: 8),
-                        Text("Couldn't Load Weather Data", style: const TextStyle(color: Colors.red)),
-                        TextButton(
-                          onPressed: _fetchWeatherData,
-                          child: const Text('Retry'),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              size: 20,
+                              color: Colors.blue,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.location,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.wb_sunny,
+                                  size: 16,
+                                  color: Colors.orange,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(sunrise),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.nights_stay,
+                                  size: 16,
+                                  color: Colors.deepOrange,
+                                ),
+                                const SizedBox(width: 2),
+                                Text(sunset),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on, size: 20, color: Colors.blue),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.location,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.wb_sunny, size: 16, color: Colors.orange),
-                                  const SizedBox(width: 2),
-                                  Text(sunrise),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Row(
-                                children: [
-                                  const Icon(Icons.nights_stay, size: 16, color: Colors.deepOrange),
-                                  const SizedBox(width: 2),
-                                  Text(sunset),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                    // Date header
+                    Text(
+                      _currentDate,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
                       ),
-                      // Date header
-                      Text(
-                        _currentDate,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      if (_weatherData != null)
-                        SizedBox(
-                          height: 112,
-                          child: ListView.separated(
-                            controller: _scrollController,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _getHourlyForecast().length,
-                            separatorBuilder: (context, index) => const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              final hourData = _getHourlyForecast()[index];
-                              final time = hourData['time'] as DateTime;
-                              final temp = hourData['temp_c'].round();
-                              final icon = hourData['condition'];
-                              final isMidnight = hourData['isMidnight'];
+                    ),
+                    if (_weatherData != null)
+                      SizedBox(
+                        height: 112,
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _getHourlyForecast().length,
+                          separatorBuilder:
+                              (context, index) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final hourData = _getHourlyForecast()[index];
+                            final time = hourData['time'] as DateTime;
+                            final temp = hourData['temp_c'].round();
+                            final icon = hourData['condition'];
+                            final isMidnight = hourData['isMidnight'];
 
-                              return SizedBox(
-                                width: 55,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Visibility(
-                                      visible: isMidnight,
-                                      maintainSize: true,
-                                      maintainAnimation: true,
-                                      maintainState: true,
-                                      child: Text(
-                                        _formatDate(time),
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
-                                        ),
-                                        overflow: TextOverflow.visible,
-                                        softWrap: false,
-                                      ),
-                                    ),
-                                    Text(
-                                      _formatTime(time),
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Image.network("https:$icon", width: 24, height: 24),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '$temp°C',
+                            return SizedBox(
+                              width: 55,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Visibility(
+                                    visible: isMidnight,
+                                    maintainSize: true,
+                                    maintainAnimation: true,
+                                    maintainState: true,
+                                    child: Text(
+                                      _formatDate(time),
                                       style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        color: Colors.grey,
                                       ),
+                                      overflow: TextOverflow.visible,
+                                      softWrap: false,
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                                  ),
+                                  Text(
+                                    _formatTime(time),
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Image.network(
+                                    "https:$icon",
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '$temp°C',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
+                ),
       ),
     );
   }
-} 
+}

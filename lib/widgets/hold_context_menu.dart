@@ -3,7 +3,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:weather_app/models/location_manager.dart';
 import 'package:weather_app/services/reverse_geocoding.dart';
 
-
 class HoldContextMenu extends StatefulWidget {
   final Offset? tapPosition;
   final LatLng? tapLatLng;
@@ -13,7 +12,7 @@ class HoldContextMenu extends StatefulWidget {
     super.key,
     required this.tapPosition,
     required this.tapLatLng,
-    required this.onClose
+    required this.onClose,
   });
 
   @override
@@ -33,7 +32,6 @@ class _HoldContextMenu extends State<HoldContextMenu> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Positioned(
       left: widget.tapPosition!.dx,
       top: widget.tapPosition!.dy,
@@ -49,7 +47,10 @@ class _HoldContextMenu extends State<HoldContextMenu> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text('Add Pin',style: TextStyle(color: Colors.black, fontSize: 14),),
+                title: const Text(
+                  'Add Pin',
+                  style: TextStyle(color: Colors.black, fontSize: 14),
+                ),
                 onTap: () async {
                   // Do something with _tapLatLng
                   await LocationManager().addLocationLatLng(widget.tapLatLng!);
@@ -57,10 +58,14 @@ class _HoldContextMenu extends State<HoldContextMenu> {
                 },
               ),
               ListTile(
-                title: const Text('Open Weather',style: TextStyle(color: Colors.black, fontSize: 14),),
+                title: const Text(
+                  'Open Weather',
+                  style: TextStyle(color: Colors.black, fontSize: 14),
+                ),
                 onTap: () async {
                   // Do something with _tapLatLng
-                  Map<String,dynamic> location = await ReverseGeocoding().getLocation(widget.tapLatLng!);
+                  Map<String, dynamic> location = await ReverseGeocoding()
+                      .getLocation(widget.tapLatLng!);
                   String chosenName = "";
                   if (location['city'] != null) {
                     chosenName = location['city'];
@@ -74,12 +79,13 @@ class _HoldContextMenu extends State<HoldContextMenu> {
                   await Navigator.pushNamed(
                     context,
                     '/weather/detail',
-                    arguments: "${widget.tapLatLng!.latitude},${widget.tapLatLng!.longitude},$chosenName"
+                    arguments:
+                        "${widget.tapLatLng!.latitude},${widget.tapLatLng!.longitude},$chosenName",
                   );
                   widget.onClose();
-                }
+                },
               ),
-              ],
+            ],
           ),
         ),
       ),

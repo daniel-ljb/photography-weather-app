@@ -44,16 +44,29 @@ class _AlertsPageState extends State<AlertsPage> {
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.black, width: 1.5),
                       borderRadius: BorderRadius.circular(32),
+                      color: Color.fromARGB(103, 135, 220, 235),
                     ),
                     child: Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            alert.name,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                alert.name,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Text(
+                                alert.location["name"],
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              )
+                            ]
                           ),
                         ),
                         IconButton(

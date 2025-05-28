@@ -13,6 +13,7 @@ class AddAlertPage extends StatefulWidget {
 }
 
 class _AddAlertPageState extends State<AddAlertPage> {
+  bool _initialized = false;
   final TextEditingController _nameController = TextEditingController();
   int _selectedDays = 0;
   int _selectedHours = 1; // Start at 1 for new alerts
@@ -49,9 +50,12 @@ class _AddAlertPageState extends State<AddAlertPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Map && args['alert'] is Alert) {
       final Alert alert = args['alert'];
+      print(alert.times);
       _editIndex = args['index'] as int?;
       _nameController.text = alert.name;
       _alertTimes.clear();
@@ -59,6 +63,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
       _precipitationSet = Set<int>.from(alert.precipitation);
       _cloudCoverageSet = Set<int>.from(alert.cloudCoverage);
       _selectedTimesOfDay = Set<int>.from(alert.timesOfDay);
+      _selectedLocation = alert.location;
       // Set initial days/hours to first alert time if available
       if (_alertTimes.isNotEmpty) {
         _selectedDays = _alertTimes[0]['days'] ?? 0;
@@ -134,6 +139,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
               } else {
                 AlertManager().addAlert(alert);
               }
+              _initialized = false;
               Navigator.popUntil(context, ModalRoute.withName('/alerts'));
             },
             child: const Text(
@@ -283,6 +289,10 @@ class _AddAlertPageState extends State<AddAlertPage> {
                   icon: const Icon(Icons.add_circle_outline),
                   onPressed: () {
                     setState(() {
+                      // dont readd the same time
+                      for (final alert in _alertTimes) {
+                        if (alert['days'] == _selectedDays && alert['hours'] == _selectedHours) return;
+                      }
                       _alertTimes.add({
                         'days': _selectedDays,
                         'hours': _selectedHours,

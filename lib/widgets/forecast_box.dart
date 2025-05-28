@@ -113,11 +113,8 @@ class _ForecastBoxState extends State<ForecastBox> {
         for (int i = 0; i < hourlyData.length; i++) {
           final hourTime = DateTime.parse(hourlyData[i]['time']);
           // Find the first hour greater than or equal to the current time
-          // Include the current hour if its minute is 0
-          if (hourTime.isAfter(now) ||
-              (hourTime.isAtSameMomentAs(now) && hourTime.minute == 0)) {
-            // If it's exactly the current hour, include it. Otherwise, start from the next hour.
-            startIndex = i; // Start from this hour
+          if (hourTime.hour >= now.hour) {
+            startIndex = i;
             break;
           }
           // If loop finishes without finding an hour >= now, take the last hour

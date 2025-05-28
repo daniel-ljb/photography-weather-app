@@ -1,10 +1,13 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:background_fetch/background_fetch.dart';
 import 'app.dart';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'services/notification_manager.dart';
+
 
 // what to do when a notification is clicked when app isnt open
 @pragma('vm:entry-point')
@@ -37,6 +40,9 @@ Future<void> main() async {
   bool envCorrect = await checkEnvironment();
   if (!envCorrect) return;
   
+  // Register background task
+  BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
+
   runApp(const MyApp());
 }
 

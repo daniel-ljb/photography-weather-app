@@ -294,14 +294,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                   userAgentPackageName: 'com.photography.app',
                 ),
 
-                // Temperature Layer
-                if (_temperatureLayer)
-                  TileLayer(
-                    // urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
-                    urlTemplate:
+                   // Temperature Layer
+                   if (_temperatureLayer)
+                    TileLayer(
+                      // urlTemplate: 'https://tile.openweathermap.org/map/temp/{z}/{x}/{y}.png?appid=$_openWeatherMapApiKey',
+                      urlTemplate: 
                         'http://maps.openweathermap.org/maps/2.0/weather/TA2/{z}/{x}/{y}?appid=$_openWeatherMapApiKey&palette=0:45A7FF;10:E3F043;25:FA6E43&opacity=0.7&date=$_setTime',
-                    userAgentPackageName: 'com.photography.app',
-                  ),
+                      userAgentPackageName: 'com.photography.app',
+                    ),
 
                 // Precipitation Layer
                 if (_precipitationLayer)

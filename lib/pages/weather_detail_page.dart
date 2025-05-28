@@ -286,6 +286,32 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
     if (_selectedDayIndex >= forecastDays.length) return {};
     
     final astro = forecastDays[_selectedDayIndex]['astro'];
+    final date = forecastDays[_selectedDayIndex]['date'];
+    
+    // Parse the time strings into DateTime objects
+    DateTime parseTime(String timeStr) {
+      final timeParts = timeStr.split(' ');
+      final time = timeParts[0];
+      final period = timeParts[1];
+      final [hours, minutes] = time.split(':').map(int.parse).toList();
+      final hour = period == 'PM' && hours != 12 ? hours + 12 : (period == 'AM' && hours == 12 ? 0 : hours);
+      return DateTime.parse('$date ${hour.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:00');
+    }
+
+    final sunrise = parseTime(astro['sunrise']);
+    final sunset = parseTime(astro['sunset']);
+
+    // Calculate golden and blue hours
+    final morningGoldenStart = sunrise;
+    final morningGoldenEnd = sunrise.add(const Duration(hours: 1));
+    final eveningGoldenStart = sunset.subtract(const Duration(hours: 1));
+    final eveningGoldenEnd = sunset;
+
+    final morningBlueStart = sunrise.subtract(const Duration(minutes: 30));
+    final morningBlueEnd = sunrise;
+    final eveningBlueStart = sunset;
+    final eveningBlueEnd = sunset.add(const Duration(minutes: 30));
+
     return {
       'sunrise': astro['sunrise'],
       'sunset': astro['sunset'],
@@ -293,7 +319,38 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
       'moonset': astro['moonset'],
       'moon_phase': astro['moon_phase'],
       'moon_illumination': astro['moon_illumination'].toString(),
+      'morning_golden_start': DateFormat('h:mm a').format(morningGoldenStart),
+      'morning_golden_end': DateFormat('h:mm a').format(morningGoldenEnd),
+      'evening_golden_start': DateFormat('h:mm a').format(eveningGoldenStart),
+      'evening_golden_end': DateFormat('h:mm a').format(eveningGoldenEnd),
+      'morning_blue_start': DateFormat('h:mm a').format(morningBlueStart),
+      'morning_blue_end': DateFormat('h:mm a').format(morningBlueEnd),
+      'evening_blue_start': DateFormat('h:mm a').format(eveningBlueStart),
+      'evening_blue_end': DateFormat('h:mm a').format(eveningBlueEnd),
     };
+  }
+
+  String _getMoonPhaseEmoji(String phase) {
+    switch (phase.toLowerCase()) {
+      case 'new moon':
+        return '🌑';
+      case 'waxing crescent':
+        return '🌒';
+      case 'first quarter':
+        return '🌓';
+      case 'waxing gibbous':
+        return '🌔';
+      case 'full moon':
+        return '🌕';
+      case 'waning gibbous':
+        return '🌖';
+      case 'last quarter':
+        return '🌗';
+      case 'waning crescent':
+        return '🌘';
+      default:
+        return '🌑';
+    }
   }
 
   @override
@@ -496,12 +553,47 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const Icon(Icons.wb_twilight, size: 30, color: Colors.amber),
+                                        const SizedBox(height: 8),
+                                        const Text('Golden Hour', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(
+                                          '${sunTimes['morning_golden_start']} - ${sunTimes['morning_golden_end']}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        Text(
+                                          '${sunTimes['evening_golden_start']} - ${sunTimes['evening_golden_end']}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: [
+                                        const Icon(Icons.nightlight, size: 30, color: Colors.blue),
+                                        const SizedBox(height: 8),
+                                        const Text('Blue Hour', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(
+                                          '${sunTimes['morning_blue_start']} - ${sunTimes['morning_blue_end']}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        Text(
+                                          '${sunTimes['evening_blue_start']} - ${sunTimes['evening_blue_end']}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
                                 Center(
                                   child: Text(
-                                    'Moon Phase: ${sunTimes['moon_phase'] ?? 'Unknown'}',
+                                    '${_getMoonPhaseEmoji(sunTimes['moon_phase'] ?? '')} ${sunTimes['moon_phase'] ?? 'Unknown'}',
                                     style: const TextStyle(
                                       fontSize: 16,
-                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ),

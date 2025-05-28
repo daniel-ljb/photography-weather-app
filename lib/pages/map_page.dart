@@ -12,6 +12,7 @@ import '../widgets/search_bar.dart';
 import '../widgets/forecast_box.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/location_manager.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key, required this.title});

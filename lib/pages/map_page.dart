@@ -52,7 +52,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       _cloudLayer ||
       _windLayer ||
       _visibilityLayer ||
-      _lightPollutionLayer ||
       _shadeLayer;
 
   // Context menu
@@ -339,7 +338,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                           // LatLng(64.58032-1.03,-34.41551+8.7),
                           // LatLng((39.22808+5.4)-1.03,(23.53516-11)+8.7),
                           LatLng(64.58032, -34.41551),
-                          LatLng(39.22808, 23.53516),
+                          LatLng(39.22808, 23.54516),
                         ),
                         imageProvider: AssetImage('assets/light_pollution.png'),
                         opacity: 0.5,

@@ -32,21 +32,22 @@ class _AddAlertPageState extends State<AddAlertPage> {
 
   // Add for time of day
   final List<String> _timeOfDayOptions = [
+    'Blue Hour AM',
     'Sunrise',
-    'Golden Hour Morning',
-    'Blue Hour Morning',
+    'Golden Hour AM',
+    'Morning',
     'Midday',
     'Afternoon',
     'Evening',
-    'Blue Hour Evening',
-    'Golden Hour Evening',
+    'Golden Hour PM',
     'Sunset',
+    'Blue Hour PM',
     'Night',
   ];
   Set<int> _selectedTimesOfDay = <int>{};
 
   int? _editIndex;
-
+  
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -117,6 +118,16 @@ class _AddAlertPageState extends State<AddAlertPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Please enter a location'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+                return;
+              }
+              // check if there are any times#
+              if (_alertTimes.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter at least 1 alert time'),
                     duration: Duration(seconds: 1),
                   ),
                 );
@@ -401,7 +412,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildMultiCheckbox(
-                        'None',
+                        'None\n0mm',
                         0,
                         _precipitationSet,
                         (int v) => setState(
@@ -413,7 +424,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
                         ),
                       ),
                       _buildMultiCheckbox(
-                        'Low\n2.5–4mm',
+                        'Light\n-2.5mm',
                         1,
                         _precipitationSet,
                         (int v) => setState(
@@ -425,8 +436,20 @@ class _AddAlertPageState extends State<AddAlertPage> {
                         ),
                       ),
                       _buildMultiCheckbox(
-                        'High\n4+ mm',
+                        'Moderate\n2.5-4mm',
                         2,
+                        _precipitationSet,
+                        (int v) => setState(
+                          () =>
+                              _precipitationSet = _onMultiCheck(
+                                _precipitationSet,
+                                v,
+                              ),
+                        ),
+                      ),
+                      _buildMultiCheckbox(
+                        'High\n4+ mm',
+                        3,
                         _precipitationSet,
                         (int v) => setState(
                           () =>
@@ -535,7 +558,13 @@ class _AddAlertPageState extends State<AddAlertPage> {
                     children: List.generate(
                       _timeOfDayOptions.length,
                       (i) => FilterChip(
-                        label: Text(_timeOfDayOptions[i]),
+                        label: SizedBox(
+                          width:125,
+                          child: Text(_timeOfDayOptions[i])
+                        ),
+                        showCheckmark: false,
+                        selectedColor: Color.fromARGB(255, 133, 148, 233),
+                        elevation: 2,
                         selected: _selectedTimesOfDay.contains(i),
                         onSelected: (selected) {
                           setState(() {
@@ -567,6 +596,7 @@ class _AddAlertPageState extends State<AddAlertPage> {
     return Column(
       children: [
         Checkbox(
+          activeColor: Color.fromARGB(255, 133, 148, 233),
           value: group.contains(value),
           onChanged: (_) {
             print('Checkbox tapped: $label, value: $value, group: $group');

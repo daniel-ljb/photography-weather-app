@@ -68,6 +68,7 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
   }
 
   void _removeOverlay() {
+    _focusNode.unfocus();
     _overlayEntry?.remove();
     _overlayEntry = null;
   }

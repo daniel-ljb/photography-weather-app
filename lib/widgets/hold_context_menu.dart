@@ -52,7 +52,7 @@ class _HoldContextMenu extends State<HoldContextMenu> {
                   style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
                 onTap: () async {
-                  // Do something with _tapLatLng
+                  FocusScope.of(context).unfocus();
                   await LocationManager().addLocationLatLng(widget.tapLatLng!);
                   widget.onClose();
                 },
@@ -63,7 +63,7 @@ class _HoldContextMenu extends State<HoldContextMenu> {
                   style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
                 onTap: () async {
-                  // Do something with _tapLatLng
+                  FocusScope.of(context).unfocus();
                   Map<String, dynamic> location = await ReverseGeocoding()
                       .getLocation(widget.tapLatLng!);
                   String chosenName = "";

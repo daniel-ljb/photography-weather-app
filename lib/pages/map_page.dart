@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:weather_app/services/notification_manager.dart';
 import 'package:weather_app/widgets/hold_context_menu.dart';
 import 'package:weather_app/widgets/time_slider.dart';
 import '../widgets/layer_toggle.dart';
@@ -58,7 +59,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   Offset? _tapPosition;
   LatLng? _tapLatLng;
   bool _showContextMenu = false;
-
+  
   // For the time slider
   int selectedTimeIndex = 0;
   final int _currentUNIX =
@@ -147,8 +148,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     setState(() {
       _tapLatLng = LatLng(location['lat'], location['lon']);
       _tapPosition = Offset(
-        MediaQuery.of(context).size.width / 2,
-        MediaQuery.of(context).size.height / 2,
+        MediaQuery.of(context).size.width / 3,
+        MediaQuery.of(context).size.height / 6,
       );
       _showContextMenu = true;
     });
@@ -279,6 +280,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 onPointerDown: (tapPosition, point) {
                   // print("tap");
                   _searchBarHideController.removeOverlay();
+                  FocusScope.of(context).unfocus();
                   if (_showContextMenu) {
                     setState(() {
                       _showContextMenu = false;
@@ -433,7 +435,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           // Alert button in bottom right
           Positioned(
             right: 24,
-            bottom: MediaQuery.of(context).size.height * 0.33,
+            bottom: MediaQuery.of(context).viewInsets.bottom > 0 
+              ? MediaQuery.of(context).viewInsets.bottom - 115
+              : MediaQuery.of(context).size.height * 0.33,
             child: FloatingActionButton(
               heroTag: 'alertButton',
               backgroundColor: Colors.blue,

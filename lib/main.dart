@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -42,6 +43,13 @@ Future<void> main() async {
   
   // Register background task
   BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
+
+  // Set transparent status bar
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // transparent status bar
+    statusBarIconBrightness: Brightness.dark, // or Brightness.light for white icons
+    statusBarBrightness: Brightness.light, // for iOS
+  ));
 
   runApp(const MyApp());
 }

@@ -111,7 +111,8 @@ class _WeatherSearchBarState extends State<WeatherSearchBar> {
   }
 
   void _showOverlay() {
-    _removeOverlay();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     if (_searchResults.isEmpty) return;
 
     final RenderBox renderBox = context.findRenderObject() as RenderBox;

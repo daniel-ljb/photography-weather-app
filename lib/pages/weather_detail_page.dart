@@ -294,6 +294,7 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
   }
 
   // Get wind direction as a compass direction
+  // ignore: unused_element
   String _getWindDirection(int degrees) {
     const directions = [
       'N',

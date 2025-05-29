@@ -228,12 +228,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               value: _windLayer,
               onChanged: (value) => setState(() => _windLayer = value),
             ),
-            LayerToggle(
-              title: 'Visibility',
-              icon: Icons.visibility,
-              value: _visibilityLayer,
-              onChanged: (value) => setState(() => _visibilityLayer = value),
-            ),
+            // LayerToggle(
+            //   title: 'Visibility',
+            //   icon: Icons.visibility,
+            //   value: _visibilityLayer,
+            //   onChanged: (value) => setState(() => _visibilityLayer = value),
+            // ),
             LayerToggle(
               title: 'Light Pollution',
               icon: Icons.flourescent,
@@ -241,12 +241,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               onChanged:
                   (value) => setState(() => _lightPollutionLayer = value),
             ),
-            LayerToggle(
-              title: 'Shade',
-              icon: Icons.wb_shade,
-              value: _shadeLayer,
-              onChanged: (value) => setState(() => _shadeLayer = value),
-            ),
+            // LayerToggle(
+            //   title: 'Shade',
+            //   icon: Icons.wb_shade,
+            //   value: _shadeLayer,
+            //   onChanged: (value) => setState(() => _shadeLayer = value),
+            // ),
           ],
         ),
       ),
@@ -280,7 +280,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                 onPointerDown: (tapPosition, point) {
                   // print("tap");
                   _searchBarHideController.removeOverlay();
-                  FocusScope.of(context).unfocus();
                   if (_showContextMenu) {
                     setState(() {
                       _showContextMenu = false;

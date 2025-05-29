@@ -8,11 +8,12 @@ class WeatherService {
   static const String baseUrl = 'http://api.weatherapi.com/v1';
   final String apiKey = dotenv.env['WEATHER_API_KEY'] ?? '';
 
-  Future<Map<String, dynamic>> getWeatherForecast(String coordinates) async {
+  Future<Map<String, dynamic>> getWeatherForecast(String coordinates, {int days=14}) async {
     try {
+      print('$baseUrl/forecast.json?key=$apiKey&q=$coordinates&days=$days&aqi=no');
       final response = await http.get(
         Uri.parse(
-          '$baseUrl/forecast.json?key=$apiKey&q=$coordinates&days=14&aqi=no',
+          '$baseUrl/forecast.json?key=$apiKey&q=$coordinates&days=$days&aqi=no',
         ),
       );
 

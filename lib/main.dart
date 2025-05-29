@@ -142,10 +142,11 @@ void setupNotifications() async {
   );
 }
 
-Future<void> showNotification() async {
+int notificationID = 0;
+Future<void> showNotification(title, body, payload) async {
   const AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
-    'channel id', 'channel name',
-    channelDescription: 'description'
+    'channel_id', 'channel_name',
+    channelDescription: 'Notification for photography weather app'
   );
   
   const DarwinNotificationDetails iOSDetails = DarwinNotificationDetails(
@@ -167,11 +168,11 @@ Future<void> showNotification() async {
   );
   
   await flutterLocalNotificationsPlugin.show(
-    0, 
-    'plain title', 
-    'plain body', 
+    notificationID++, 
+    title, 
+    body, 
     notificationDetails,
-    payload: 'item x'
+    payload: payload
   );
 }
 
